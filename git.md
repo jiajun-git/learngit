@@ -154,3 +154,28 @@ The key's randomart image is:
 然后，点“Add SSH Key”，填上任意Title，在Key文本框里粘贴id_rsa.pub文件的内容：
 ```
 
+```sh
+#添加远程仓库
+在github上创建learngit仓库
+在本地的learngit仓库下运行命令：
+$ git remote add origin git@github.com:jiajun-git/learngit.git
+$ git push -u origin master
+The authenticity of host 'github.com (13.250.177.223)' can't be established.
+RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'github.com,13.250.177.223' (RSA) to the list of known hosts.
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (9/9), 712 bytes | 89.00 KiB/s, done.
+Total 9 (delta 2), reused 0 (delta 0)
+remote: Resolving deltas: 100% (2/2), done.
+To github.com:jiajun-git/learngit.git
+ * [new branch]      master -> master
+Branch 'master' set up to track remote branch 'master' from 'origin'.
+
+之后提交不用再加-u参数：
+git push origin master
+```
+
