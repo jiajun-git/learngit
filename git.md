@@ -180,6 +180,7 @@ The key's randomart image is:
 在github上创建learngit仓库
 在本地的learngit仓库下运行命令：
 $ git remote add origin git@github.com:jiajun-git/learngit.git
+远程库的名字就是origin，这是Git默认的叫法，也可以改成别的，但是origin这个名字一看就知道是远程库。
 $ git push -u origin master
 The authenticity of host 'github.com (13.250.177.223)' can't be established.
 RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
@@ -198,5 +199,18 @@ Branch 'master' set up to track remote branch 'master' from 'origin'.
 
 之后提交不用再加-u参数：
 git push origin master
+```
+
+```sh
+#从远程库克隆并且上传新的代码
+在指定目录下git bash
+git clone git@github.com:jiajun-git/gitskills.git
+或者点击github上的clone按钮，复制https地址
+git clone https://github.com/jiajun-git/gitskills.git
+
+克隆下来之后如果需要更改用户名和邮箱见第二节
+然后可进行修改、git add、git commint、git push origin master
+
+Git支持多种协议，默认的git://(git@github.com:jiajun-git/gitskills.git)使用ssh，但也可以使用https等其他协议。使用https除了速度慢以外，还有个最大的麻烦是每次推送都必须输入口令,原生git协议速度最快
 ```
 
