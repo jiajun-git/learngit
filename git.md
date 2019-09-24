@@ -1,5 +1,26 @@
 ## git
 
+### 1.基础知识和安装
+
+```sh
+git由c语言编写，分布式版本控制系统，开源
+分布式版本控制系统根本没有“中央服务器”，每个人的电脑上都是一个完整的版本库，这样，你工作的时候，就不需要联网了，因为版本库就在你自己的电脑上
+```
+
+```sh
+#安装
+https://git-scm.com/downloads
+安装完成后，还需要最后一步设置，在命令行输入：
+$ git config --global user.name "Your Name"
+$ git config --global user.email "email@example.com"
+因为Git是分布式版本控制系统，所以，每个机器都必须自报家门：你的名字和Email地址。
+注意`git config`命令的`--global`参数，用了这个参数，表示你这台机器上所有的Git仓库都会使用这个配置，当然也可以对某个仓库指定不同的用户名和Email地址。
+对某个仓库指定用户名和Email：
+$ git config user.name "Your Name"
+$ git config user.email "email@example.com"
+还可用$ git config user.name、$ git config user.email查看你的用户名和邮箱
+```
+
 ### 2.创建版本库
 
 ```sh
