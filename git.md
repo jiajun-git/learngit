@@ -309,11 +309,7 @@ $ git log --graph    （git merge --no-ff）
 #此模式下图如下：
 ```
 
-
-
 ![1569331114923](C:\Users\84614\AppData\Roaming\Typora\typora-user-images\1569331114923.png)
-
-
 
 ```sh
 #解决冲突
@@ -377,11 +373,7 @@ $ git log --graph --pretty=oneline --abbrev-commit
 * 095b6e2 wrote a readme file![git-br-conflict-merged](https://www.liaoxuefeng.com/files/attachments/919023031831104/0)
 ```
 
-
-
 ![1569330325537](C:\Users\84614\AppData\Roaming\Typora\typora-user-images\1569330325537.png)
-
-
 
 ```sh
 
