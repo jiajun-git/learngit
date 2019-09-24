@@ -214,3 +214,173 @@ git clone https://github.com/jiajun-git/gitskills.git
 Git支持多种协议，默认的git://(git@github.com:jiajun-git/gitskills.git)使用ssh，但也可以使用https等其他协议。使用https除了速度慢以外，还有个最大的麻烦是每次推送都必须输入口令,原生git协议速度最快
 ```
 
+### 6.分支
+
+```sh
+#创建与合并分支
+首先，我们创建dev分支，然后切换到dev分支：
+$ git checkout -b dev
+Switched to a new branch 'dev'
+
+git checkout命令加上-b参数表示创建并切换，相当于以下两条命令：
+$ git branch dev
+$ git checkout dev
+Switched to branch 'dev'
+
+然后，用git branch命令查看当前分支：
+$ git branch
+* dev
+  master
+git branch命令会列出所有分支，当前分支前面会标一个*号。
+然后，我们就可以在dev分支上正常提交，比如对readme.txt做个修改，加上一行：
+Creating a new branch is quick.
+然后提交：
+$ git add readme.txt 
+$ git commit -m "branch test"
+[dev b17d20e] branch test
+ 1 file changed, 1 insertion(+)
+现在，dev分支的工作完成，我们就可以切换回master分支：
+$ git checkout master
+Switched to branch 'master'
+```
+
+![git-br-on-master](https://www.liaoxuefeng.com/files/attachments/919022533080576/0)
+
+```sh
+我们把dev分支的工作成果合并到master分支上：
+$ git merge dev
+Updating d46f35e..b17d20e
+Fast-forward
+ readme.txt | 1 +
+ 1 file changed, 1 insertion(+)
+#git merge命令用于合并指定分支到当前分支
+因为创建、合并和删除分支非常快，所以Git鼓励你使用分支完成某个任务，合并后再删掉分支，这和直接在master分支上工作效果是一样的，但过程更安全。
+#删除分支
+$ git branch -d dev
+Deleted branch dev (was b17d20e).
+
+切换分支使用git checkout <branch>，而前面讲过的撤销修改则是git checkout -- <file>，同一个命令，有两种作用，确实有点令人迷惑。
+实际上，切换分支这个动作，用switch更科学。因此，最新版本的Git提供了新的git switch命令来切换分支：
+创建并切换到新的dev分支，可以使用：
+$ git switch -c dev
+直接切换到已有的master分支，可以使用：
+$ git switch master
+```
+
+![git-br-ff-merge](https://www.liaoxuefeng.com/files/attachments/919022412005504/0)
+
+```sh
+#合并分支时，Git会用Fast forward模式，但这种模式下，删除分支后，会丢掉分支信息。如果要强制禁用Fast forward模式，Git就会在merge时生成一个新的commit，这样，从分支历史上就可以看出分支信息。下面我们实战一下--no-ff方式的git merge：
+$ git merge --no-ff -m "merge with no-ff" dev
+Merge made by the 'recursive' strategy.
+ readme.txt | 1 +
+ 1 file changed, 1 insertion(+)
+因为本次合并要创建一个新的commit，所以加上-m参数，把commit描述写进去。
+#git merge和git merge --no-ff的区别
+$ git log --graph   （git merge）
+* commit 6266234a8faec97e6b72541c5bedc931c4aa0aad (HEAD -> master, dev)
+| Author: jiajun-git <sjiaj1995@163.com>
+| Date:   Tue Sep 24 21:20:18 2019 +0800
+|
+|     no off branch dev
+|
+*   commit b0189f2a3c8d094fcb7f323d94ae69c0fbdc9c0b
+
+$ git log --graph    （git merge --no-ff）
+*   commit 057ece5feed9292797c69ff63de1a4b71956984b (HEAD -> master)
+|\  Merge: 6266234 d5f493d
+| | Author: jiajun-git <sjiaj1995@163.com>
+| | Date:   Tue Sep 24 21:24:08 2019 +0800
+| |
+| |     merge with no-ff
+| |
+| * commit d5f493d4eb391a4fcf337e6a463bba7fd3040d6b (dev)
+|/  Author: jiajun-git <sjiaj1995@163.com>
+|   Date:   Tue Sep 24 21:23:40 2019 +0800
+|
+|       no off branch
+|
+* commit 6266234a8faec97e6b72541c5bedc931c4aa0aad
+| Author: jiajun-git <sjiaj1995@163.com>
+| Date:   Tue Sep 24 21:20:18 2019 +0800
+|
+|     no off branch dev
+
+#此模式下图如下：
+```
+
+![1569331114923](C:\Users\84614\AppData\Roaming\Typora\typora-user-images\1569331114923.png)
+
+
+
+```sh
+#解决冲突
+$ git checkout master
+Switched to branch 'master'
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+$ vi readme.txt
+
+$ git add readme.txt
+
+$ git commint -m "branch master"
+git: 'commint' is not a git command. See 'git --help'.
+
+The most similar command is
+        commit
+
+$ git commit -m "branch master"
+[master 6a4ce52] branch master
+ 1 file changed, 1 insertion(+)
+
+$ git merge dev
+Auto-merging readme.txt
+CONFLICT (content): Merge conflict in readme.txt
+Automatic merge failed; fix conflicts and then commit the result.
+
+vi readme.txt
+Git is a version control system.
+Git is free software.
+Git is a distributed version control system.
+git commit
+git new
+Creating a new branch is quick.
+<<<<<<< HEAD
+git branch master.
+=======
+git branch dev.
+>>>>>>> dev
+~
+
+#手动修改冲突的内容，再提交
+$ git add readme.txt
+$ git commit -m "fix conflict"
+
+#git log --graph命令可以看到分支合并图。
+$ git log --graph --pretty=oneline --abbrev-commit
+*   b0189f2 (HEAD -> master) fix conflict
+|\
+| * ea7b684 (dev) branch dev
+* | 6a4ce52 branch master
+|/
+* b6fef88 new branch
+* 075f551 (origin/master) five step
+* b1055ae first step
+* 525faf7 new commit
+* 21e43e1 git knowledge01
+* 234e97e git knowledge
+* fce4e8f commit
+* 38a3775 distributed
+* 095b6e2 wrote a readme file![git-br-conflict-merged](https://www.liaoxuefeng.com/files/attachments/919023031831104/0)
+```
+
+![1569330325537](C:\Users\84614\AppData\Roaming\Typora\typora-user-images\1569330325537.png)
+
+```sh
+
+
+```
+
+
+
