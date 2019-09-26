@@ -427,6 +427,15 @@ Deleted branch dev (was 336235c).
 强行删除。
 ```
 
+```sh
+#远程分支
+$ git checkout -b dev origin/dev
+$ git push origin dev
+git pull也失败了，原因是没有指定本地dev分支与远程origin/dev分支的链接，根据提示，设置dev和origin/dev的链接：
+$ git branch --set-upstream-to=origin/dev dev
+Branch 'dev' set up to track remote branch 'dev' from 'origin'.
+```
+
 
 
 
