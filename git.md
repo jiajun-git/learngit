@@ -586,6 +586,36 @@ https://www.liaoxuefeng.com/wiki/896043488029600/1163625339727712
 
 
 
+### 10.自定义git
+
+```sh
+#让Git显示颜色，会让命令输出看起来更醒目：
+$ git config --global color.ui true
+
+#忽略文件
+有些时候，你必须把某些文件放到Git工作目录中，但又不能提交它们，比如保存了数据库密码的配置文件啦，等等，每次git status都会显示Untracked files ...，有强迫症的童鞋心里肯定不爽。
+好在Git考虑到了大家的感受，这个问题解决起来也很简单，在Git工作区的根目录下创建一个特殊的.gitignore文件，然后把要忽略的文件名填进去，Git就会自动忽略这些文件。
+
+忽略文件的原则是：
+1.忽略操作系统自动生成的文件，比如缩略图等；
+2.忽略编译生成的中间文件、可执行文件等，也就是如果一个文件是通过另一个文件自动生成的，3.那自动生成的文件就没必要放进版本库，比如Java编译产生的.class文件；忽略你自己的带有敏感信息的配置文件，比如存放口令的配置文件。
+
+你确实想添加该文件，可以用-f强制添加到Git：
+$ git add -f App.class
+
+或者你发现，可能是.gitignore写得有问题，需要找出来到底哪个规则写错了，可以用git check-ignore命令检查：
+$ git check-ignore -v App.class
+.gitignore:3:*.class	App.class
+
+#配置别名
+如果敲git st就表示git status那就简单多了，当然这种偷懒的办法我们是极力赞成的。
+我们只需要敲一行命令，告诉Git，以后st就表示status：
+$ git config --global alias.st status
+
+#搭建git服务器
+https://www.liaoxuefeng.com/wiki/896043488029600/899998870925664
+```
+
 
 
 
