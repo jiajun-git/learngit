@@ -512,3 +512,74 @@ https://www.cnblogs.com/dolphin0520/p/3811437.html
 
 ### 11.static
 
+- static修饰的成员变量和方法，从属于类
+- 普通变量和方法从属于对象
+- 静态方法不能调用非静态成员，编译会报错
+
+```sh
+#static的作用
+方便在没有创建对象的情况下进行调用(方法/变量)。
+显然，被static关键字修饰的方法或者变量不需要依赖于对象来进行访问，只要类被加载了，就可以通过类名去进行访问。
+static可以用来修饰类的成员方法、类的成员变量，另外也可以编写static代码块来优化程序性能
+```
+
+```sh
+#static方法
+static方法也成为静态方法，由于静态方法不依赖于任何对象就可以直接访问，因此对于静态方法来说，是没有this的，因为不依附于任何对象，既然都没有对象，就谈不上this了，并且由于此特性，在静态方法中不能访问类的非静态成员变量和非静态方法，因为非静态成员变量和非静态方法都必须依赖于具体的对象才能被调用。
+```
+
+```sh
+#static变量
+static变量也称为静态变量，静态变量和非静态变量的区别：
+    静态变量被所有对象共享，在内存中只有一个副本，在类初次加载的时候才会初始化
+    非静态变量是对象所拥有的，在创建对象的时候被初始化，存在多个副本，各个对象拥有的副本互不影响
+static成员变量初始化顺序按照定义的顺序来进行初始化
+```
+
+```sh
+#static块
+构造方法用于对象的初始化。静态初始化块，用于类的初始化操作。
+在静态初始化块中不能直接访问非staic成员。
+静态初始化块的作用就是：提升程序性能。
+class Person{
+    private Date birthDate;
+
+    public Person(Date birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    boolean isBornBoomer() {
+        Date startDate = Date.valueOf("1946");
+        Date endDate = Date.valueOf("1964");
+        return birthDate.compareTo(startDate)>=0 && birthDate.compareTo(endDate) < 0;
+    }
+}
+isBornBoomer是用来这个人是否是1946-1964年出生的，而每次isBornBoomer被调用的时候，都会生成startDate和birthDate两个对象，造成了空间浪费，如果改成这样效率会更好：
+class Person{
+    private Date birthDate;
+    private static Date startDate,endDate;
+    static{
+        startDate = Date.valueOf("1946");
+        endDate = Date.valueOf("1964");
+    }
+
+    public Person(Date birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    boolean isBornBoomer() {
+        return birthDate.compareTo(startDate)>=0 && birthDate.compareTo(endDate) < 0;
+    }
+}
+因此，很多时候会将一些只需要进行一次的初始化操作都放在static代码块中进行
+静态初始化块可以置于类中的任何地方，类中可以有多个静态初始化块。 
+在类初次被加载时，会按照静态初始化块的顺序来执行每个块，并且只会执行一次。
+原文链接：https://blog.csdn.net/kuangay/article/details/81485324
+```
+
+
+
+
+
+
+
