@@ -326,6 +326,8 @@ public class TestA{
 可以定义多个构造方法，编译器根据参数自动判断；
 
 可以在一个构造方法内部调用另一个构造方法，便于代码复用。
+
+构造器可以有任何访问的修饰符，public、private、protected或者没有修饰符，都可以对构造方法进行修饰。不同于实例方法的是构造方法不能有任何非访问性质的修饰符修饰，例如static、final、synchronized、abstract等都不能修饰构造方法。
 ```
 
 ### 6.方法重载和重写
@@ -607,6 +609,11 @@ public class Running {
 | 枚举       |    Y     |     Y      |              |          Y          |     Y      |
 
 ```sh
+从实现方式来讲他们最大的区别就是懒汉式是延时加载,
+他是在需要的时候才创建对象,而饿汉式在加载类时创建实例。 
+饿汉式无需关注多线程问题、写法简单明了、能用则用。但是它是加载类时创建实例、所以如果是一个工厂模式、缓存了很多实例、那么就得考虑效率问题，因为这个类一加载则把所有实例不管用不用一块创建。
+懒汉式的优点是延时加载、缺点是应该用同步。
+
 单例模式——饿汉式
 public class Singleton2 {
 
@@ -647,7 +654,7 @@ public class Singleton1 {
     }
 
     /**
-     * 3、双重检查加锁（推荐）
+     * 3、双重检查加锁（推荐）DCL
      */
     public static Singleton1 getInstanceC() {
         // 先判断实例是否存在，若不存在再对类对象进行加锁处理
@@ -791,7 +798,11 @@ class Person{
 原文链接：https://blog.csdn.net/kuangay/article/details/81485324
 ```
 
+### 12.JVM
 
+##### 1.类的加载
+
+![类加载过程](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-6/类加载过程.png)
 
 
 
