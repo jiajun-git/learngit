@@ -851,8 +851,18 @@ hashCode() 的作用是**获取哈希码**，也称为散列码；它实际上�
 
 ```sh
 List(对付顺序的好帮手)： List接口存储一组不唯一（可以有多个元素引用相同的对象），有序的对象
+      Arraylist： Object数组
+      Vector： Object数组
+      LinkedList： 双向链表
 Set(注重独一无二的性质): 不允许重复的集合。不会有多个元素引用相同的对象。
+      HashSet（无序，唯一）: 基于 HashMap 实现的，底层采用 HashMap 来保存元素
+      LinkedHashSet： LinkedHashSet 继承于 HashSet，并且其内部是通过 LinkedHashMap 来实现的。        有点类似于我们之前说的LinkedHashMap 其内部是基于 HashMap 实现一样，不过还是有一点点区别的
+      TreeSet（有序，唯一）： 红黑树(自平衡的排序二叉树
 Map(用Key来搜索的专家): 使用键值对存储。Map会维护与Key有关联的值。两个Key可以引用相同的对象，但Key不能重复，典型的Key是String类型，但也可以是任何对象。
+       HashMap：JDK1.8以后在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为8）时，将链表转        化为红黑树，以减少搜索时间
+       LinkedHashMap： LinkedHashMap 继承自 HashMap，所以它的底层仍然是基于拉链式散列结构即由数        组和链表或红黑树组成。另外，LinkedHashMap 在上面结构的基础上，增加了一条双向链表，使得上面的        结构可以保持键值对的插入顺序。同时通过对链表进行相应的操作，实现了访问顺序相关逻辑。
+       Hashtable： 数组+链表组成的，数组是 HashMap 的主体，链表则是主要为了解决哈希冲突而存在的
+       TreeMap： 红黑树（自平衡的排序二叉树）
 ```
 
 ##### **ArrayList和LinkedList的区别：**
@@ -862,7 +872,7 @@ Map(用Key来搜索的专家): 使用键值对存储。Map会维护与Key有关�
     2. 对于随机访问get和set，ArrayList要优于LinkedList，因为LinkedList要移动指针；ArrayList想要get(int index)元素时，直接返回index位置上的元素，而LinkedList需要通过for循环进行查找
     
     3. 对于添加和删除操作add和remove，一般大家都会说LinkedList要比ArrayList快，因为ArrayList要移动数据。 所以当插入的数据量很小时，两者区别不太大，当插入的数据量大时，大约在容量的1/10之前，LinkedList会优于ArrayList，在其后就劣与ArrayList，且越靠近后面越差。所以个人觉得，一般首选用ArrayList，由于LinkedList可以实现栈、队列以及双端队列等数据结构，所以当特定需要时候，使用LinkedList，当然咯，数据量小的时候，两者差不多，视具体情况去选择使用；当数据量大的时候，如果只需要在靠前的部分插入或删除数据，那也可以选用LinkedList，反之选择ArrayList反而效率更高。
-##### **HashMap 、 Hashtable、HashSet**
+##### **HashMap 、 Hashtable、HashSet对比**
 
 ```sh
 HashMap和Hashtable实现了Map接口，HashSet实现了Set接口。
@@ -875,3 +885,29 @@ HashMap 是非线程安全的，HashTable 是线程安全的；HashTable 内部�
 HashSet 底层就是基于 HashMap 实现的。当你把对象加入HashSet时，HashSet会先计算对象的hashcode值来判断对象加入的位置，同时也会与其他加入的对象的hashcode值作比较，如果没有相符的hashcode，HashSet会假设对象没有重复出现。但是如果发现有相同hashcode值的对象，这时会调用equals（）方法来检查hashcode相等的对象是否真的相同。如果两者相同，HashSet就不会让加入操作成功。
 ```
 
+##### HashMap
+
+```sh
+HashMap基于hashing原理，我们通过put()和get()方法储存和获取对象。当我们将键值对传递给put()方法时，HashMap 通过 key 的 hashCode 经过扰动函数处理过后得到 hash 值，然后通过 (n - 1) & hash 判断当前元素存放的位置（bucket位置）（这里的 n 指的是数组的长度），如果当前位置存在元素的话，就判断该元素与要存入的元素的 hash 值以及 key 是否相同，如果相同的话，直接覆盖，不相同就通过拉链法解决冲突。当获取对象时，通过键对象的equals()方法找到正确的键值对，然后返回值对象。
+
+所谓扰动函数指的就是 HashMap 的 hash 方法。使用 hash 方法也就是扰动函数是为了防止一些实现比较差的 hashCode() 方法 换句话说使用扰动函数之后可以减少碰撞。
+
+#有关HashMap的一些问答
+“如果两个键的hashcode相同，你如何获取值对象？” 当我们调用get()方法，HashMap会使用键对象的hashcode找到bucket位置,找到bucket位置之后，会调用keys.equals()方法去找到链表中正确的节点，最终找到要找的值对象。
+
+为什么String, Integer这样的wrapper类适合作为键？ String, Integer这样的wrapper（包装类）类作为HashMap的键是再适合不过了，而且String最为常用。因为String是不可变的，也是final的，而且已经重写了equals()和hashCode()方法了。其他的wrapper类也有这个特点。不可变性是必要的，因为为了要计算hashCode()，就要防止键值改变，如果键值在放入时和获取时返回不同的hashcode的话，那么就不能从HashMap中找到你想要的对象。不可变性还有其他的优点如线程安全。因为获取对象的时候要用到equals()和hashCode()方法，那么键对象正确的重写这两个方法是非常重要的。如果两个不相等的对象返回不同的hashcode的话，那么碰撞的几率就会小些，这样就能提高HashMap的性能。
+
+“如果HashMap的大小超过了负载因子(load factor)定义的容量，怎么办？”默认的负载因子大小为0.75，也就是说，当一个map填满了75%的bucket时候，和其它集合类(如ArrayList等)一样，将会创建原来HashMap大小的两倍的bucket数组，来重新调整map的大小，并将原来的对象放入新的bucket数组中。这个过程叫作rehashing，因为它调用hash方法找到新的bucket位置。数组的长度扩大了两倍, 如果不进行rehash那么下次查找的时候就找不到对应的数据,多线程情况下,多个线程对同一个map的数据进行rehash, 会引起链表数据的一个循环链表,当你查询这个链表中的数据时, 因为是循环链表, next1 ==> next2 ==> next1 ==> next2 ... 一直这样next下去会形成死锁.【默认的初始容量（容量为HashMap中槽的数目）是16，且实际容量必须是2的整数次幂。如果 new 的时候指定了容量且不是2的幂，实际容量会是最接近(大于)指定容量的2的幂，比如 new HashMap<>(19)，比19大且最接近的2的幂是32，实际容量就是32。】
+
+HashMap 什么时候开辟bucket数组占用内存？HashMap 在 new 后并不会立即分配**bucket数组，而是第一次 put 时初始化使用resize() 函数进行分配。（类似 ArrayList 在第一次 add 时分配空间）
+
+HashMap 和 ConcurrentHashMap的区别？说简单点就是HashMap是线程不安全的，单线程情况下使用；而ConcurrentHashMap是线程安全的，多线程使用！
+```
+
+在get和put的过程中，计算下标时，先对hashCode进行hash操作，然后再通过hash值进一步计算下标，如下图所示：
+
+![1574994546824](C:\Users\eaijusn\AppData\Roaming\Typora\typora-user-images\1574994546824.png)
+
+![img](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-6/JDK1.8%E4%B9%8B%E5%90%8E%E7%9A%84HashMap%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.jpg)
+
+TreeMap、TreeSet以及JDK1.8之后的HashMap底层都用到了红黑树。红黑树就是为了解决二叉查找树的缺陷，因为二叉查找树在某些情况下会退化成一个线性结构。
