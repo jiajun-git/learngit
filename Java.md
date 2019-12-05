@@ -16,6 +16,104 @@ Java中**transient**关键字的作用，简单地说，就是让某些被修饰
 
 2、其它，看具体业务需求吧，哪些字段不想被序列化.为什么要不被序列化呢，主要是为了节省存储空间，其它的感觉没啥好处，可能还有坏处（有些字段可能需要重新计算，初始化什么的），总的来说，**利大于弊**。
 
+```sh
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+/**
+ * @description 使用transient关键字不序列化某个变量
+ *        注意读取的时候，读取数据的顺序一定要和存放数据的顺序保持一致
+ *        
+ * @author Alexia
+ * @date  2013-10-15
+ */
+public class TransientTest {
+    
+    public static void main(String[] args) {
+        
+        User user = new User();
+        user.setUsername("Alexia");
+        user.setPasswd("123456");
+        
+        System.out.println("read before Serializable: ");
+        System.out.println("username: " + user.getUsername());
+        System.err.println("password: " + user.getPasswd());
+        
+        try {
+            ObjectOutputStream os = new ObjectOutputStream(
+                    new FileOutputStream("C:/user.txt"));
+            os.writeObject(user); // 将User对象写进文件
+            os.flush();
+            os.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            ObjectInputStream is = new ObjectInputStream(new FileInputStream(
+                    "C:/user.txt"));
+            user = (User) is.readObject(); // 从流中读取User的数据
+            is.close();
+            
+            System.out.println("\nread after Serializable: ");
+            System.out.println("username: " + user.getUsername());
+            System.err.println("password: " + user.getPasswd());
+            
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class User implements Serializable {
+    private static final long serialVersionUID = 8294180014912103005L;  
+    
+    private String username;
+    private transient String passwd;
+    
+    public String getUsername() {
+        return username;
+    }
+    
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    
+    public String getPasswd() {
+        return passwd;
+    }
+    
+    public void setPasswd(String passwd) {
+        this.passwd = passwd;
+    }
+
+}
+```
+
+输出为：
+
+```sh
+read before Serializable: 
+username: Alexia
+password: 123456
+
+read after Serializable: 
+username: Alexia
+password: null      //密码字段为null，说明反序列化时根本没有从文件中获取到信息。
+```
+
+
+
 ### 2.Java中Ear、Jar、War文件之间有何不同
 
 在文件结构上，三者并没有什么不同，它们都采用zip或jar档案文件压缩格式。但是它们的使用目的有所区别：
@@ -948,4 +1046,77 @@ https://juejin.im/post/598ea9116fb9a03c335a99a4
 | double  | 8个字节 | 8*8=64位 |       没有后缀 F 的浮点数值（例如：3.14）默认为 double       |
 |  char   | 2个字节 | 2*8=16位 | Java中，只要是字符，不管是数字还是英文还是汉字，都占两个字节。 |
 | boolean | 1个字节 | 1*8=8位  |                         false、true                          |
+
+
+
+### 17.tomcat
+
+##### **http**
+
+```sh
+Http : Http 允许 Web 服务器和浏览器通过 Internet 发送并接受数据, 是一种基于”请求—响应”的协议, 客户端请求一个文件, 服务器端对该请求进行响应. Http 使用可靠的 tcp 连接, tcp 协议默认使用 tcp 80端口, 
+在 Http 中, 总是由客户端通过建立连接并发送 http 请求来初始化一个事务的. Web 服务器端并不负责联系客户端或建立一个到客户端的回调连接.客户端或服务器端可提前关闭连接, 例如, 当使用 Web 浏览器浏览网页时, 可以单击浏览器上的 stop 按钮来停止下载文件, 这样就有效的关闭了一个 Web 服务器的 http 连接.
+
+一个 HTTP 请求包含以下三部分:
+* 请求方法—-统一资源标识符(Uniform Resource Identifier, URI)——协议/版本
+* 请求头
+* 实体
+POST /examples/default.jsp HTTP/1.1 
+Accept: text/plain; text/html 
+Accept-Language: en-gb 
+Connection: Keep-Alive 
+Host: localhost 
+User-Agent: Mozilla/4.0 (compatible; MSIE 4.01; Windows 98)
+Content-Length: 33 Content-Type: application/x-www-form-urlencoded Accept-Encoding: gzip, deflate 
+
+lastName=Franks&firstName=Michael  
+
+方法—统一资源标识符(URI)—协议/版本出现在请求的第一行。
+POST /examples/default.jsp HTTP/1.1
+
+这里 POST 是请求方法，/examples/default.jsp 是 URI，而 HTTP/1.1 是协议/版本部分。 每个 HTTP 请求可以使用 HTTP 标准里边提到的多种方法之一。HTTP 1.1 支持 7 种类型的请 求：GET, POST, HEAD, OPTIONS, PUT, DELETE 和 TRACE。GET 和 POST 在互联网应用里边最普遍使用的。
+
+URI 完全指明了一个互联网资源。URI 通常是相对服务器的根目录解释的。因此，始终一斜 线/开头。统一资源定位器(URL)其实是一种 URI(查看 http://www.ietf.org/rfc/rfc2396.txt)
+来的。该协议版本代表了正在使用的 HTTP 协议的版本。
+
+请求的头部包含了关于客户端环境和请求的主体内容的有用信息。例如它可能包括浏览器设 置的语言，主体内容的长度等等。每个头部通过一个回车换行符(CRLF)来分隔的。
+
+对于 HTTP 请求格式来说，头部和主体内容之间有一个回车换行符(CRLF)是相当重要的。CRLF 告诉HTTP服务器主体内容是在什么地方开始的。在一些互联网编程书籍中，CRLF还被认为是HTTP 请求的第四部分。
+
+在前面一个 HTTP 请求中，主体内容只不过是下面一行：
+
+lastName=Franks&firstName=Michael
+
+实体内容在一个典型的 HTTP 请求中可以很容易的变得更长。
+```
+
+##### tomcat运行原理
+
+```sh
+#tomcat 三种部署项目的方法
+1）第一种：在tomcat中的conf目录中，在server.xml中的，<host/>节点中添加：
+
+<Context path="/hello"
+docBase="D:\eclipse3.2.2forwebtools\workspace\hello\WebRoot" debug="0" privileged="true">
+</Context>
+
+path是虚拟路径，docBase是JSP应用程序的物理路径
+在Tomcat的配置文件中，一个Web应用就是一个特定的Context，可以通过在server.xml中新建Context里部署一个JSP应用程序
+
+2）第二种：将web项目文件件拷贝到webapps 目录中。
+Tomcat的Webapps目录是Tomcat默认的应用目录，当服务器启动时，会加载所有这个目录下的应用。也可以将JSP程序打包成一个war包放在目录下，服务器会自动解开这个war包，并在这个目录下生成一个同名的文件夹。一个war包就是有特性格式的jar包，它是将一个Web程序的所有内容进行压缩得到。具体如何打包，可以使用许多开发工具的IDE环境，如Eclipse、NetBeans、ant、JBuilder等。也可以用cmd命令：jar -cvf applicationname.war package.*；
+
+以上两种方法，Web应用被服务器加载后都会在Tomcat的conf\catalina\localhost目录下生成一个XML文件，你可以直接建一个这样的文件。
+3）第三种方法：很灵活，在Tomcat的安装目录下，找到conf\Catalina\localhost
+在该目录中新建一个xml文件，名字可以随意取，只要和当前文件中的文件名不重复就行了，该xml文件的内容为：
+
+<Context path="/hello"
+docBase="D:\eclipse3.2.2forwebtools\workspace\hello\WebRoot" debug="0"  privileged="true">
+</Context>
+
+第3个方法有个优点，可以定义别名。服务器端运行的项目名称为path，外部访问的URL则使用XML的文件名。这个方法很方便的隐藏了项目的名称，对一些项目名称被固定不能更换，但外部访问时又想换个路径，非常有效。
+
+注意：删除一个Web应用同时也要删除webapps下相应的文件夹server.xml中相应的Context，还要将Tomcat的conf
+\catalina\localhost目录下相应的xml文件删除。否则Tomcat仍会岸配置去加载。
+```
 
