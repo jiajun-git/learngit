@@ -1090,6 +1090,24 @@ lastName=Franks&firstName=Michael
 实体内容在一个典型的 HTTP 请求中可以很容易的变得更长。
 ```
 
+##### **servlet**
+
+```sh
+#Servlet 是什么？
+Java Servlet 是运行在 Web 服务器或应用服务器上的程序，它是作为来自 Web 浏览器或其他 HTTP 客户端的请求和 HTTP 服务器上的数据库或应用程序之间的中间层。
+
+使用 Servlet，您可以收集来自网页表单的用户输入，呈现来自数据库或者其他源的记录，还可以动态创建网页。
+
+Servlet 执行以下主要任务：
+    读取客户端（浏览器）发送的显式的数据。这包括网页上的 HTML 表单，或者也可以是来自 applet 或自定义的 HTTP 客户端程序的表单。
+    读取客户端（浏览器）发送的隐式的 HTTP 请求数据。这包括 cookies、媒体类型和浏览器能理解的压缩格式等等。
+    处理数据并生成结果。这个过程可能需要访问数据库，执行 RMI 或 CORBA 调用，调用 Web 服务，或者直接计算得出对应的响应。
+    发送显式的数据（即文档）到客户端（浏览器）。该文档的格式可以是多种多样的，包括文本文件（HTML 或 XML）、二进制文件（GIF 图像）、Excel 等。
+    发送隐式的 HTTP 响应到客户端（浏览器）。这包括告诉浏览器或其他客户端被返回的文档类型（例如 HTML），设置 cookies 和缓存参数，以及其他类似的任务。
+```
+
+![https://www.runoob.com/wp-content/uploads/2014/07/servlet-arch.jpg](https://www.runoob.com/wp-content/uploads/2014/07/servlet-arch.jpg)
+
 ##### tomcat运行原理
 
 ```sh
@@ -1119,6 +1137,26 @@ docBase="D:\eclipse3.2.2forwebtools\workspace\hello\WebRoot" debug="0"  privileg
 注意：删除一个Web应用同时也要删除webapps下相应的文件夹server.xml中相应的Context，还要将Tomcat的conf
 \catalina\localhost目录下相应的xml文件删除。否则Tomcat仍会岸配置去加载。
 ```
+
+![https://upload-images.jianshu.io/upload_images/6807865-f3747ca11e20e10c.png](https://upload-images.jianshu.io/upload_images/6807865-f3747ca11e20e10c.png)
+
+![https://images2015.cnblogs.com/blog/1078737/201701/1078737-20170109110435088-1621430699.png](https://images2015.cnblogs.com/blog/1078737/201701/1078737-20170109110435088-1621430699.png)
+
+```sh
+从上图可以看出Tomcat的核心是两个组件：连接器（Connector）和容器（Container）。Connector组件是负责生成请求对象和响应对象的，Tomcat默认的是HttpConnector，负责根据收到的Http请求报文生成Request对象和Response对象，并把这两个对象传递给Container，然后根据Response中的内容生成相应的HTTP报文。
+
+Container是容器的父接口，所有子容器都必须实现这个接口，简单来说就是服务器部署的项目是运行在Container中的。Container里面的项目获取到Connector传递过来对应的的Request对象和Response对象进行相应的操作。
+
+Connector可以根据不同的设计和应用场景进行替换。一个Container可以选择对应多个Connector。多个Connector和一个Container就形成了一个Service，有了Service就可以对外提供服务了。
+
+#Tomcat要为一个Servlet的请求提供服务，需要做四件事：
+ 1.创建一个request对象并填充那些有可能被所引用的Servlet使用的信息，如参数，头部、cookies、查询字符串等。一个request对象就是javax.servlet.ServletRequest或javax.servlet.http.ServletRequest接口的一个实例。
+ 2.创建一个response对象，所引用的servlet使用它来给客户端发送响应。一个response对象是javax.servlet.ServletResponse或javax.servlet.http.ServletResponse接口的一个实例。
+ 3.调用servlet的service方法，并传入request和response对象。这里servlet会从request对象取值，给response写值。
+ 4.根据servlet返回的response生成相应的HTTP响应报文。
+```
+
+
 
 ### 18.Netty
 
