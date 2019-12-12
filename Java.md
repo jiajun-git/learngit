@@ -720,9 +720,26 @@ ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
 #线程池工作过程
 1. 线程池刚创建时，里面没有一个线程。任务队列是作为参数传进来的。不过，就算队列里面有任务，线程池也不会马上执行它们。
-2. 当调用 execute() 方法添加一个任务时，线程池会做如下判断： a) 如果正在运行的线程数量小于 corePoolSize，那么马上创建线程运行这个任务； b) 如果正在运行的线程数量大于或等于 corePoolSize，那么将这个任务放入队列； c) 如果这时候队列满了，而且正在运行的线程数量小于 maximumPoolSize，那么还是要创建非核心线程立刻运行这个任务； d) 如果队列满了，而且正在运行的线程数量大于或等于 maximumPoolSize，那么线程池会抛出异常RejectExecutionException。
+2. 当调用 execute() 方法添加一个任务时，线程池会做如下判断： 
+a) 如果正在运行的线程数量小于 corePoolSize，那么马上创建线程运行这个任务；
+b) 如果正在运行的线程数量大于或等于 corePoolSize，那么将这个任务放入队列； 
+c) 如果这时候队列满了，而且正在运行的线程数量小于 maximumPoolSize，那么还是要创建非核心线程立刻运行这个任务； 
+d) 如果队列满了，而且正在运行的线程数量大于或等于 maximumPoolSize，那么线程池会抛出异常RejectExecutionException。
 3. 当一个线程完成任务时，它会从队列中取下一个任务来执行。
 4. 当一个线程无事可做，超过一定的时间（keepAliveTime）时，线程池会判断，如果当前运行的线程数大于 corePoolSize，那么这个线程就被停掉。所以线程池的所有任务完成后，它最终会收缩到 corePoolSize 的大小。
+
+#线程池参数
+1、corePoolSize
+核心线程数，核心线程会一直存活，即使没有任务需要处理。当线程数小于核心线程数时，即使现有的线程空闲，线程池也会优先创建新线程来处理任务，而不是直接交给现有的线程处理。
+核心线程在allowCoreThreadTimeout被设置为true时会超时退出，默认情况下不会退出。
+2、maxPoolSize
+当线程数大于或等于核心线程，且任务队列已满时，线程池会创建新的线程，直到线程数量达到maxPoolSize。如果线程数已等于maxPoolSize，且任务队列已满，则已超出线程池的处理能力，线程池会拒绝处理任务而抛出异常。
+3、keepAliveTime
+当线程空闲时间达到keepAliveTime，该线程会退出，直到线程数量等于corePoolSize。如果allowCoreThreadTimeout设置为true，则所有线程均会退出直到线程数量为0。
+4、allowCoreThreadTimeout
+是否允许核心线程空闲退出，默认值为false。
+5、queueCapacity
+任务队列容量。从maxPoolSize的描述上可以看出，任务队列的容量会影响到线程的变化，因此任务队列的长度也需要恰当的设置。
 ```
 
 ```sh
@@ -1278,6 +1295,12 @@ Netty是一个高性能、异步事件驱动的NIO框架，基于JAVA NIO提供�
 
 ### 19.前端知识
 
+HTML负责结构，网页想要表达的内容由html书写。
+
+CSS负责样式，网页的美与丑由它来控制
+
+JS负责交互，用户和网页产生的互动由它来控制。
+
 ##### jsp和JavaScript
 
 ```sh
@@ -1328,6 +1351,72 @@ p {
     <link href="styles/style.css" rel="stylesheet" type="text/css">
 ```
 
+##### EasyUI
+
+```sh
+jQuery EasyUI 是一个基于 jQuery 的框架，集成了各种用户界面插件。
+easyUI就是一个在Jquery的基础上封装了一些组件....我们在编写页面的时候，就可以直接使用这些组件...非常方便...easyUI多用于在后台的页面上...
+
+首先将easyui的包下载下来导入项目中
+然后在jsp中编辑：
+1 <%@ page language="java" pageEncoding="UTF-8"%>
+ 2 <!DOCTYPE HTML>
+ 3 <html>
+ 4   <head>
+ 5     <title>EasyUI入门——创建EasyUI的Dialog</title>
+ 6   <!-- 引入JQuery -->
+ 7   <script type="text/javascript" src="${pageContext.request.contextPath}/jquery-easyui-1.4.1/jquery.min.js"></script>
+ 8   <!-- 引入EasyUI -->
+ 9   <script type="text/javascript" src="${pageContext.request.contextPath}/jquery-easyui-1.4.1/jquery.easyui.min.js"></script>
+10   <!-- 引入EasyUI的中文国际化js，让EasyUI支持中文 -->
+11   <script type="text/javascript" src="${pageContext.request.contextPath}/jquery-easyui-1.4.1/locale/easyui-lang-zh_CN.js"></script>
+12   <!-- 引入EasyUI的样式文件-->
+13   <link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-easyui-1.4.1/themes/default/easyui.css" type="text/css"/>
+14   <!-- 引入EasyUI的图标样式文件-->
+15   <link rel="stylesheet" href="${pageContext.request.contextPath}/jquery-easyui-1.4.1/themes/icon.css" type="text/css"/>
+16   
+17   <script type="text/javascript">
+18       $(function(){
+19           //console.info($('#dd2'));
+20           /*使用JavaScript动态创建EasyUI的Dialog的步骤：
+21           1、定义一个div，并给div指定一个id
+22           2、使用Jquery选择器选中该div，然后调用dialog()方法就可以创建EasyUI的Dialog
+23           */
+24           $('#dd2').dialog();//使用默认的参数创建EasyUI的Dialog
+25           //使用自定义参数创建EasyUI的Dialog
+26           $('#dd3').dialog({
+27               title: '使用JavaScript创建的Dialog',
+28               width: 400,
+29               height: 200,
+30               closed: false,
+31               cache: false,
+32               modal: true
+33           });
+34       });
+35   </script>
+36   
+37   </head>
+38   
+39   <body>
+40       <%--使用纯html的方式创建创建EasyUI的Dialog的步骤：
+41       1、定义一个div
+42       2、将div的class样式属性设置成easyui-dialog，这样就可以将普通的div变成EasyUI的Dialog了
+43        --%>
+44     <div class="easyui-dialog" id="dd1" title="EasyUI Dialog" style="width: 500px;height: 300px;">
+45         Hello World!
+46     </div>
+47     <div id="dd2">Dialog Content</div>
+48     <div id="dd3">Dialog Content</div>
+49   </body>
+50 </html>
+```
+
+##### zTree
+
+zTree 是利用 JQuery 的核心代码，实现一套能完成大部分常用功能的 Tree 插件
+
+zTree是一个依靠jQuery实现的多功能“树插件”。优异的性能、灵活的配置、多种功能的组合是zTree最大优点。
+
 ### 20.redis
 
 **Redis**是由C语言编写的开源、基于内存、支持多种数据结构、高性能的**Key-Value**数据库。
@@ -1377,5 +1466,106 @@ update或者delete数据库钱，查询redis是否存在该数据，存在的话
 
 上面这种操作，如果并发量很小的情况下基本没问题，但是高并发的情况请注意下面场景：
 为了update先删掉了redis中的该数据，这时候另一个线程执行查询，发现redis中没有，瞬间执行了查询SQL，并且插入到redis中一条数据，回到刚才那个update语句，这个悲催的线程压根不知道刚才那个该死的select线程犯了一个弥天大错！于是这个redis中的错误数据就永远的存在了下去，直到下一个update或者delete。
+```
+
+### 21.java算法
+
+```sh
+#冒泡排序
+冒泡排序算法的算法过程如下：
+①. 比较相邻的元素。如果第一个比第二个大，就交换他们两个。
+②. 对每一对相邻元素作同样的工作，从开始第一对到结尾的最后一对。这步做完后，最后的元素会是最大的数。
+③. 针对所有的元素重复以上的步骤，除了最后一个。
+④. 持续每次对越来越少的元素重复上面的步骤①~③，直到没有任何一对数字需要比较。
+
+public class BubbleSort {
+    public static void sort(int[] array) {
+
+        int length = array.length;
+        //外层：需要length-1次循环比较
+        for (int i = 0; i < length - 1; i++) {
+            //内层：每次循环需要两两比较的次数，每次比较后，都会将当前最大的数放到最后位置，所以每次比较次数递减一次
+            for (int j = 0; j < length - 1 - i; j++) {
+                if (array[j] > array[j+1]) {
+                    //交换数组array的j和j+1位置的数据
+                    swap(array, j, j+1);
+                }
+            }
+        }
+    }
+
+    /**
+     * 交换数组array的i和j位置的数据
+     * @param array 数组
+     * @param i 下标i
+     * @param j 下标j
+     */
+    public static void swap(int[] array, int i, int j) {
+        int temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
+#插入排序（Insertion Sort）
+插入排序（Insertion-Sort）的算法描述是一种简单直观的排序算法。它的工作原理是通过构建有序序列，对于未排序数据，在已排序序列中从后向前扫描，找到相应位置并插入。插入排序在实现上，通常采用in-place排序（即只需用到O(1)的额外空间的排序），因而在从后向前扫描过程中，需要反复把已排序元素逐步向后挪位，为最新元素提供插入空间。
+ public static int[] insertionSort(int[] array) {
+        if (array.length == 0)
+            return array;
+        int current;
+        for (int i = 0; i < array.length - 1; i++) {
+            current = array[i + 1];
+            int preIndex = i;
+            while (preIndex >= 0 && current < array[preIndex]) {
+                array[preIndex + 1] = array[preIndex];
+                preIndex--;
+            }
+            array[preIndex + 1] = current;
+        }
+        return array;
+    }
+    
+#快速排序（Quick Sort）
+快速排序的基本思想：通过一趟排序将待排记录分隔成独立的两部分，其中一部分记录的关键字均比另一部分的关键字小，则可分别对这两部分记录继续进行排序，以达到整个序列有序。
+public static int[] QuickSort(int[] array, int start, int end) {
+        if (array.length < 1 || start < 0 || end >= array.length || start > end) return null;
+        int smallIndex = partition(array, start, end);
+        if (smallIndex > start)
+            QuickSort(array, start, smallIndex - 1);
+        if (smallIndex < end)
+            QuickSort(array, smallIndex + 1, end);
+        return array;
+    }
+    /**
+     * 快速排序算法——partition
+     * @param array
+     * @param start
+     * @param end
+     * @return
+     */
+    public static int partition(int[] array, int start, int end) {
+        int pivot = (int) (start + Math.random() * (end - start + 1));
+        int smallIndex = start - 1;
+        swap(array, pivot, end);
+        for (int i = start; i <= end; i++)
+            if (array[i] <= array[end]) {
+                smallIndex++;
+                if (i > smallIndex)
+                    swap(array, i, smallIndex);
+            }
+        return smallIndex;
+    }
+
+    /**
+     * 交换数组内两个元素
+     * @param array
+     * @param i
+     * @param j
+     */
+    public static void swap(int[] array, int i, int j) {
+        int temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
 ```
 
