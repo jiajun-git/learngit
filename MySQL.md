@@ -17,6 +17,9 @@ PolarDB
 如果没有启动，进入d盘mysql目录下，bin目录下  net start mysql     #启动mysql服务
 再用mysql -u root -p
 exit 退出
+
+#postgresql和mysql比较
+PostGreSQL具备更高的可靠性，对数据一致性完整性的支持高于MySQL，因此PG更加适合严格的企业应用场景（比如金融、电信、ERP、CRM）；而MySQL查询速度较快，更加适合业务逻辑相对简单、数据可靠性要求较低的互联网场景（比如google、facebook、alibaba）。
 ```
 
 ### 2.主键、外键
