@@ -721,7 +721,7 @@ ExecutorService threadPool = Executors.newFixedThreadPool(10);
 #线程池工作过程
 1. 线程池刚创建时，里面没有一个线程。任务队列是作为参数传进来的。不过，就算队列里面有任务，线程池也不会马上执行它们。
 2. 当调用 execute() 方法添加一个任务时，线程池会做如下判断： 
-a) 如果正在运行的线程数量小于 corePoolSize，那么马上创建线程运行这个任务；
+a) 如果正在运行的线程数量小于 corePoolSize，无论是否其中有空闲的线程，都会给新的任务产生新的线程；
 b) 如果正在运行的线程数量大于或等于 corePoolSize，那么将这个任务放入队列； 
 c) 如果这时候队列满了，而且正在运行的线程数量小于 maximumPoolSize，那么还是要创建非核心线程立刻运行这个任务； 
 d) 如果队列满了，而且正在运行的线程数量大于或等于 maximumPoolSize，那么线程池会抛出异常RejectExecutionException。
@@ -732,6 +732,7 @@ d) 如果队列满了，而且正在运行的线程数量大于或等于 maximum
 1、corePoolSize
 核心线程数，核心线程会一直存活，即使没有任务需要处理。当线程数小于核心线程数时，即使现有的线程空闲，线程池也会优先创建新线程来处理任务，而不是直接交给现有的线程处理。
 核心线程在allowCoreThreadTimeout被设置为true时会超时退出，默认情况下不会退出。
+
 2、maxPoolSize
 当线程数大于或等于核心线程，且任务队列已满时，线程池会创建新的线程，直到线程数量达到maxPoolSize。如果线程数已等于maxPoolSize，且任务队列已满，则已超出线程池的处理能力，线程池会拒绝处理任务而抛出异常。
 3、keepAliveTime
