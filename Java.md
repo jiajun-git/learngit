@@ -1280,6 +1280,19 @@ Connector可以根据不同的设计和应用场景进行替换。一个Containe
 Netty是一个高性能、异步事件驱动的NIO框架，基于JAVA NIO提供的API实现。它提供了对TCP、UDP和文件传输的支持，作为一个异步NIO框架，Netty的所有IO操作都是异步非阻塞的，通过Future-Listener机制，用户可以方便的主动获取或者通过通知机制获得IO操作结果。
 
 在IO编程过程中，当需要同时处理多个客户端接入请求时，可以利用多线程或者IO多路复用技术进行处理。IO多路复用技术通过把多个IO的阻塞复用到同一个select的阻塞上，从而使得系统在单线程的情况下可以同时处理多个客户端请求。与传统的多线程/多进程模型比，I/O多路复用的最大优势是系统开销小，系统不需要创建新的额外进程或者线程，也不需要维护这些进程和线程的运行，降低了系统的维护工作量，节省了系统资源。 与Socket类和ServerSocket类相对应，NIO也提供了SocketChannel和ServerSocketChannel两种不同的套接字通道实现。
+
+设计
+    统一的API，适用于不同的协议（阻塞和非阻塞）
+    基于灵活、可扩展的事件驱动模型
+    高度可定制的线程模型
+    可靠的无连接数据Socket支持（UDP）
+性能
+    更好的吞吐量，低延迟
+    更低的资源消耗
+    最少的内存复制
+健壮性
+    不再因过快、过慢或超负载连接导致OutOfMemoryError
+    不再有在高速网络环境下NIO读写频率不一致的问题
 ```
 
 服务端
@@ -1291,6 +1304,157 @@ Netty是一个高性能、异步事件驱动的NIO框架，基于JAVA NIO提供�
 客户端
 
 ![1575877145069](C:\Users\eaijusn\AppData\Roaming\Typora\typora-user-images\1575877145069.png)
+
+##### **server 和client的示例代码**
+
+```sh
+#Server代码
+public class EchoServer {
+    private final int port;
+
+    public EchoServer(int port) {
+        this.port = port;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        new EchoServer(8888).start();
+    }
+
+    public void start() throws InterruptedException {
+        final EchoServerHandler serverHandler = new EchoServerHandler();
+        //创建EventLoopGroup，处理事件
+        EventLoopGroup boss = new NioEventLoopGroup();
+        EventLoopGroup worker = new NioEventLoopGroup();
+        try {
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(boss,worker)
+                    //指定所使用的NIO传输 Channel
+                    .channel(NioServerSocketChannel.class)
+                    //使用指定的端口设置套接字地址
+                    .localAddress(new InetSocketAddress(port))
+                    //添加一个EchoServerHandler到子Channel的ChannelPipeline
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            //EchoServerHandler标志为@Shareable,所以我们可以总是使用同样的实例
+                            socketChannel.pipeline().addLast(serverHandler);
+                        }
+                    });
+            //异步的绑定服务器，调用sync()方法阻塞等待直到绑定完成
+            ChannelFuture future = b.bind().sync();
+            future.channel().closeFuture().sync();
+        } finally {
+            //关闭EventLoopGroup,释放所有的资源
+            group.shutdownGracefully().sync();
+            worker.shutdownGracefully().sync();
+        }
+    }
+}
+```
+
+```sh
+#EchoServerHandler
+@ChannelHandler.Sharable //标识一个 ChannelHandler可以被多个Channel安全地共享
+public class EchoServerHandler extends ChannelInboundHandlerAdapter {
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf buffer = (ByteBuf) msg;
+        //将消息记录到控制台
+        System.out.println("Server received: " + buffer.toString(CharsetUtil.UTF_8));
+        //将接受到消息回写给发送者
+        ctx.write(buffer);
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        //将未消息冲刷到远程节点，并且关闭该 Channel
+        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER)
+                .addListener(ChannelFutureListener.CLOSE);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        //打印异常栈跟踪
+        cause.printStackTrace();
+        //关闭该Channel
+        ctx.close();
+    }
+}
+```
+
+代码要点解读：
+
+- `ServerBootStrap`是引导类，帮助服务启动的辅助类，可以设置 Socket参数
+- `EventLoopGroup`是处理I/O操作的线程池，用来分配 服务于Channel的I/O和事件的 `EventLoop`，而`NioEventLoopGroup`是`EventLoopGroup`的一个实现类。这里实例化了两个 `NioEventLoopGroup`，一个 `boss`,主要用于处理客户端连接，一个 `worker`用于处理客户端的数据读写工作
+- `EchoServerHandler`实现了业务逻辑
+- 通过调用`ServerBootStrap.bind()`方法以绑定服务器
+
+```sh
+#Client 代码
+public class EchoClient {
+    private final String host;
+    private final int port;
+
+
+    public EchoClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
+    public void start() throws InterruptedException {
+        EventLoopGroup group = new NioEventLoopGroup();
+        try {
+            Bootstrap b = new Bootstrap();
+            b.group(group)
+                    .channel(NioSocketChannel.class)
+                    .remoteAddress(new InetSocketAddress(host, port))
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            socketChannel.pipeline().addLast(new EchoClientHandler());
+                        }
+                    });
+            ChannelFuture channelFuture = b.connect().sync();
+            channelFuture.channel().closeFuture().sync();
+        } finally {
+            group.shutdownGracefully().sync();
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        new EchoClient("127.0.0.1", 8888).start();
+    }
+}
+```
+
+```sh
+#EchoClientHandler
+@ChannelHandler.Sharable
+public class EchoClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
+        System.out.println("Client received: "+byteBuf.toString());
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        ctx.writeAndFlush(Unpooled.copiedBuffer("Netty rocks",CharsetUtil.UTF_8));
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
+        ctx.close();
+    }
+}
+```
+
+代码要点解读：
+
+- 为初始化客户端，创建了一个BootStrap实例，与`ServerBootStrap`一样，也是一个引导类，主要辅助客户端
+- 分配了一个 `NioEventLoopGroup`实例，里面的 `EventLoop`，处理连接的生命周期中所发生的事件
+- `EchoClientHandler`类负责处理业务逻辑，与服务端的`EchoSeverHandler`作用相似。
 
 
 
