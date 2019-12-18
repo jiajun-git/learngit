@@ -41,6 +41,16 @@ REFERENCES classes (id);
 ALTER TABLE students
 DROP FOREIGN KEY fk_class_id;
 
+#例子
+CREATE TABLE tb_name(
+  id int NOT NULL AUTO_INCREMENT, # 非空、自增  声明
+  name VARCHAR(30) UNIQUE, #添加字段的唯一约束
+  update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, #设置时间戳默认值为当前时间
+  last_updated TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,#设置自动添加更新时间
+  size ENUM( 'small', 'medium', 'large') DEFAULT 'small', #枚举类型声明
+  PRIMARY KEY (id), #主键声明
+  FOREIGN KEY (id) REFERENCES db_name(tb_field) #声明外键
+);
 ```
 
 ### 3.索引
@@ -113,8 +123,62 @@ SELECT
 FROM students, classes;
 
 #连接查询
+1.内连接
+等值连接：指使用等号"="比较两个表的连接列的值，相当于两表执行笛卡尔后，取两表连结列值相等的记录。
+语法：
+    SELECT 列
+    FROM 表1 INNER JOIN 表2
+    ON 表1.列 = 表2.列
+    
+示例：
+    SELECT A.*, B.*
+    FROM student_info A inner join student_score B
+    ON A.student_id = B.student_id
 
 ```
+
+![img](https://img-blog.csdn.net/20160513161944354?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+非等值连接：指使用大于号">"或小于号"<"比较两个表的连接列的值，相当于两表执行笛卡尔后，取一个表大于或小于另一个表的连结列值的记录。
+
+语法：
+
+    SELECT 列
+    FROM 表1 INNER JOIN 表2
+    ON 表1.列 <> 表2.列
+
+示例：
+
+    SELECT A.*, B.*
+    FROM student_info A inner join student_score B
+    ON A.student_id > B.student_id
+![img](https://img-blog.csdn.net/20160513161841681?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+
+
+2.**外连接**
+
+**左外连接（LEFT OUTER JOIN）**：指将左表的所有记录与右表符合条件的记录，返回的结果除内连接的结果，还有左表不符合条件的记录，并在右表相应列中填NULL。
+
+示例：
+
+    SELECT A.*, B.*
+    FROM student_info A left join student_score B
+    ON A.student_id = B.student_id
+![img](https://img-blog.csdn.net/20160513163057339?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+
+
+**右外连接（RIGHT OUTER JOIN）**：与左外连接相反，指将右表的所有记录与左表符合条件的记录，返回的结果除内连接的结果，还有右表不符合条件的记录，并在左表相应列中填NULL。
+
+示例：
+
+    SELECT A.*, B.*
+    FROM student_info A right join student_score B
+    ON A.student_id = B.student_id
+![img](https://img-blog.csdn.net/20160513163810045?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+
 
 ### 5.其他实用语句
 
@@ -162,6 +226,22 @@ INSERT INTO students (id, class_id, name, gender, score) VALUES (1, 1, '小明',
 
 #若id=1的记录不存在，INSERT语句将插入新记录，否则，不执行任何操作
 INSERT IGNORE INTO students (id, class_id, name, gender, score) VALUES (1, 1, '小明', 'F', 99);
+
+#修改数据
+UPDATE tb_name SET tb_field1 = 'One', tb_field2 = 'Two' WHERE tb_field3 = '111';
+
+# 删除一个记录
+DELETE FROM tb_name WHERE name = 'Bill';
+# 删除所有行
+DELETE FROM tb_name;
+# 删除表
+DROP TABLE tb_name;
+# 删除数据库
+DROP DATABASE db_name;
+# 删除索引
+ALTER TABLE tb_name DROP INDEX [索引名称];
+# 删除列
+ALTER TABLE tb_name  DROP COLUMN column_name;
 
 #快照
 对class_id=1的记录进行快照，并存储为新表students_of_class1:
