@@ -1942,3 +1942,10 @@ spring boot项目中同时存在application.properties和application.yml文件�
 https://www.fangzhipeng.com/spring-cloud.html
 
 https://www.fangzhipeng.com/springboot/2017/06/06/springboot-all.html
+
+
+
+
+
+### 23.java泛型
+
