@@ -22,7 +22,9 @@ ctrl+h
 #9.用鼠标滚轮调整代码文字大小
 在 File > Settings > Keymap > Editor Actions 下，我们可以找到 “Decrease Font Size”和“Increase Font Size”两个选项。分别对应缩小文字和放大文字。
 右键，选择“Add Mouse Shortcut”选项。
-
+#10.设置maven
+#11.设置jdk
+File-->Project Structure-->SDKs-->+jdk
   
 ```
 
