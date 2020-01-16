@@ -66,3 +66,31 @@
 </table>
 ```
 
+### 3.时间控件laydate
+
+```html
+ layui.use('laydate', function(){
+  var laydate = layui.laydate;
+
+  //执行一个laydate实例
+  laydate.render({
+    elem: '#startTime' //指定元素\
+    ,type: 'datetime'
+    ,max : getNowFormatDate()
+  });
+
+  laydate.render({
+    elem: '#endTime' //指定元素\
+    ,type: 'datetime'
+    ,max : getNowFormatDate()
+  });
+});
+
+
+独立版的laydate:
+
+laydate.render({
+elem: '#birthday'
+})
+```
+
