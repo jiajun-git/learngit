@@ -1949,3 +1949,32 @@ https://www.fangzhipeng.com/springboot/2017/06/06/springboot-all.html
 
 ### 23.java泛型
 
+### 24.注解
+
+##### RequestMapping
+
+```java
+@RequestMapping用于映射url到控制器类的一个特定处理程序方法。可用于方法或者类上面。也就是可以通过url找到对应的方法。
+
+@RequestMapping有8个属性:
+
+    value：指定请求的实际地址。
+
+    method：指定请求的method类型（GET,POST,PUT,DELETE）等。
+
+    consumes：指定处理请求的提交内容类型（Context-Type）。
+
+    produces：指定返回的内容类型，还可以设置返回值的字符编码。
+
+    params：指定request中必须包含某些参数值，才让该方法处理。
+
+    headers：指定request中必须包含某些指定的header值，才让该方法处理请求。
+
+ 
+@getMapping与@postMapping是组合注解。
+
+@getMapping = @requestMapping(method = RequestMethod.GET)。
+
+@postMapping = @requestMapping(method = RequestMethod.POST)。
+```
+
