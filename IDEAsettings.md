@@ -49,3 +49,31 @@ File-->Project Structure-->SDKs-->+jdk
 这是一款主题插件，可以让你的ide的图标变漂亮，配色搭配的很到位，还可以切换不同的颜色，甚至可以自定义颜色。默认的配色就很漂亮了，如果需要修改配色，可以在工具栏中Tools->Material Theme然后修改配色等
 ```
 
+### 3.问题
+
+```sh
+IDEA报错Could not reserve enough space for xxxxKB object heap处理
+这个错误的大意就是说IDEA无法给虚拟机分配内存空间。解决这类问题大体是调整idea.exe.vmoptions里面的内存配置。
+```
+
+![img](assets/94316-20170421125625790-536150054.png)
+
+
+
+```sh
+The Tomcat connector configured to listen on port "端口号" failed to start.
+启动服务时总显示端口被占用
+#错误解决
+1. 打开cmd命令窗口 输入如下指令查看所有端口和PID
+netstat -ano
+2. 找到对应的端口对应的PID 输入指令找到对应的进程
+tasklist | findstr 7676
+3. 杀掉该进程 再次启动就OK
+taskkill /f /t /im java.exe 
+```
+
+
+
+### 4.debug
+
+![image-20200307172330988](assets/image-20200307172330988.png)
