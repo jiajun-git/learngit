@@ -1978,3 +1978,24 @@ https://www.fangzhipeng.com/springboot/2017/06/06/springboot-all.html
 @postMapping = @requestMapping(method = RequestMethod.POST)。
 ```
 
+### 25.get和post请求
+
+```sh
+1请求方式
+HTTP中定义了7种请求方式：POST、GET、HEAD、OPTIONS、DELETE、TRACE、PUT。其中最常用的是GET和POST
+1.1 GET请求
+     1）从字面意思来说，GET请求是用来向服务器端获取信息而发送的请求。
+     2）没有特殊设置，默认情况下浏览器发送的都是GET请求，例如点击超链接、在浏览         器地址栏直接输入地址访问。
+     3）GET请求可以向服务器发送请求参数，在URL地址后面加上?，请求参数名和值用=连接，多个参数之间使用&分隔。例如： GET /mail/1.html?name=abc&password=xyz HTTP/1.1
+ 4）需要注意的是：GET方式所能够携带的数据是由限制的，其数据大小通常不能超过4K，不适于提交大量表单数据，故而在表单的提交方式中首选POST方式。
+1.2 POST请求
+     1）POST请求的字面含义是向服务器端发送数据，仅在表单中设置method=”post”时，请求方式为POST方式[另外在Ajax应用中，可以指定请求方式为POST]。
+ 2）POST请求会将请求参数放在请求体中，而不是URL地址后面，并且发送数据的大小是没有限制的。
+2请求体
+1）GET请求没有请求体
+2）POST请求：如果form表单提交的方式为post,则表单项的数据以请求体的形式发送给服务器，没有大小限制
+3）get和post对比
+```
+
+![1583846406827](D:\learngit\assets\1583846406827.png)
+
