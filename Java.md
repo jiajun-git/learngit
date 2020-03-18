@@ -1999,3 +1999,42 @@ HTTP中定义了7种请求方式：POST、GET、HEAD、OPTIONS、DELETE、TRACE�
 
 ![1583846406827](D:\learngit\assets\1583846406827.png)
 
+### 26.Feign
+
+#### Feign原理
+
+```sh
+Feign 的英文表意为“假装，伪装，变形”， 是一个http请求调用的轻量级框架，可以以Java接口注解的方式调用Http请求，而不用像Java中通过封装HTTP请求报文的方式直接调用。Feign通过处理注解，将请求模板化，当实际调用的时候，传入参数，根据参数再应用到请求上，进而转化成真正的请求，这种请求相对而言比较直观。
+
+Feign的源码实现的过程如下：
+首先通过@EnableFeignCleints注解开启FeignCleint
+根据Feign的规则实现接口，并加@FeignCleint注解
+程序启动后，会进行包扫描，扫描所有的@ FeignCleint的注解的类，并将这些信息注入到ioc容器中。
+当接口的方法被调用，通过jdk的代理，来生成具体的RequesTemplate
+RequesTemplate在生成Request
+Request交给Client去处理，其中Client可以是HttpUrlConnection、HttpClient也可以是Okhttp
+最后Client被封装到LoadBalanceClient类，这个类结合类Ribbon做到了负载均衡。
+Feign的源码地址：https://github.com/OpenFeign/feign
+```
+
+![img](assets/14126519-4cc483cb15b9dc6d.webp)
+
+#### FeignClient注解
+
+服务A需调用服务B的test方法
+
+B服务不动
+
+A：
+
+最好新建一个server
+
+@Component
+@FeignClient(value = "tools")
+public interface ServiceAFeignClient {
+
+	@RequestMapping(value = "/hi")
+	String test();
+
+}
+tools为服务B配置中的spring.application.name,  hi为B中Controller的接口
