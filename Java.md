@@ -2038,3 +2038,34 @@ public interface ServiceAFeignClient {
 
 }
 tools为服务B配置中的spring.application.name,  hi为B中Controller的接口
+
+### 27.  java事务管理注解原理-@Transactional
+
+```sh
+1.同一个类中,一个未标注@Transactional的方法去调用标有@Transactional的方法,事务会失效。
+2.该注解只能应用到public可见度的方法上。如果应用在protected、private或者package可见度的方法上，也不会报错，但是事务设置不会起作用。
+3.数据库引擎本身不支持事务，比如说MySQL数据库中的myisam，事务是不起作用的。
+4.Spring只会对unchecked异常进行事务回滚；如果是checked异常则不回滚。
+
+(那什么是checked异常，什么是unchecked异常？我们把派生于Error或者RuntimeException的异常称为unchecked异常，所有其他的异常成为checked异常。详见下异常篇)
+
+```
+
+### 28.异常
+
+1.异常结构图
+
+![img](assets/20160326233035366)
+
+2. unchecked异常和checked异常
+
+   ```sh
+   java语言规范对这两个定义十分简单，将派生于Error或者RuntimeException的异常称为unchecked异常，所有其他的异常成为checked异常。如果出现了RuntimeException，就一定是程序员自身的问题。比如说，数组下标越界和访问空指针异常等等，只要你稍加留心这些异常都是在编码阶段可以避免的异常。如果你还是觉得这两个概念不好区分，那么“最暴力“的方法就是将常见的RuntimeException背下来，这样就可以省去很多判断的时间。
+   
+   RuntimeException（运行时异常）不需要try...catch...或throws 机制去处理的异常我们要记住以下两种情况是必声明throws异常的：
+   调用一个checked异常的方法，例如IOException，至于原因我们前面已经讨论过了，如果抛出所有的checked异常时无法通过编译的。
+   程序运行过程中发现错误，利用throw语句抛出一个异常。
+   对于unchecked异常，无非主要是两种情况要么是可以避免的（Runtime Exception），要么是不可控制的。这些也是需要声明异常的。
+   ```
+
+   
