@@ -1943,6 +1943,58 @@ https://www.fangzhipeng.com/spring-cloud.html
 
 https://www.fangzhipeng.com/springboot/2017/06/06/springboot-all.html
 
+#### 1.springboot整合docker
+
+```sh
+1.先创建dockerfile
+src/main/docker/Dockerfile:目录下
+
+FROM frolvlad/alpine-oraclejdk8:slim
+VOLUME /tmp
+ADD springboot-with-docker-0.0.1-SNAPSHOT.jar app.jar
+RUN sh -c 'touch /app.jar'
+ENV JAVA_OPTS=""
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]
+
+2.通过maven 构建docker镜像。
+在maven的pom目录，加上docker镜像构建的插件
+<properties>
+   <docker.image.prefix>springio</docker.image.prefix>
+</properties>
+<build>
+    <plugins>
+        <plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>0.4.11</version>
+            <configuration>
+                <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
+                <dockerDirectory>src/main/docker</dockerDirectory>
+                <resources>
+                    <resource>
+                        <targetPath>/</targetPath>
+                        <directory>${project.build.directory}</directory>
+                        <include>${project.build.finalName}.jar</include>
+                    </resource>
+                </resources>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+
+注：${docker.image.prefix} 为你在 docker官方仓库的用户名，如果你不需要上传镜像，随便填。
+
+3.通过maven 命令：
+第一步：mvn clean
+第二步： mvn package docker:bulid ,如下：
+docker images
+显示：
+forezp/springboot-with-docker latest 60fdb5c61692 About a minute ago 195 MB
+启动镜像：
+$ docker run -p 8080:8080 -t forezp/springboot-with-docker
+打开浏览器访问 localhost:8080;浏览器显示：Hello Docker World。 说明docker 的springboot工程已部署。
+```
+
 
 
 
