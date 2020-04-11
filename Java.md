@@ -2030,6 +2030,41 @@ $ docker run -p 8080:8080 -t forezp/springboot-with-docker
 @postMapping = @requestMapping(method = RequestMethod.POST)。
 ```
 
+##### RequestParam
+
+```sh
+@RequestParam：将请求参数绑定到你控制器的方法参数上（是springmvc中接收普通参数的注解）
+
+语法：@RequestParam(value=”参数名”,required=”true/false”,defaultValue=””) 
+value：参数名 
+required：是否包含该参数，默认为true，表示该请求路径中必须包含该参数，如果不包含就报错。
+defaultValue：默认参数值，如果设置了该值，required=true将失效，自动为false,如果没有传该参数，就使用默认值
+
+```
+
+##### RequestBody
+
+```sh
+在使用feign架构时，使用的@RequestParam注解，
+这个接收的参数长度过长会造成feign.FeignException: status 400 reading xxx#xxxx(String); content,
+的错误，就算使用post方法，@RequestParam的那个参数他会放在请求地址后面，而不是放在请求体。
+#这时候就需要将请求的参数封装在对象内，通过requestBody来实现
+@RequestMapping(value = "/editAceCustCustgroup", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    ObjectResponseStatus<Boolean> editAceCustCustgroup(@RequestBody AceCustGroupDto dto);
+    
+#参数长度过长造成的
+解决办法1：将参数封装成对象，使用 @RequestBody注解 在feign消费服务上
+解决办法2：修改内嵌tomcat的参数，内嵌tomcat对参数的默认限制是8K(还没试过，不知道怎么改)
+```
+
+```sh
+@RequestBody主要用来接收前端传递给后端的json字符串中的数据的(请求体中的数据的);
+GET方式无请求体，所以使用@RequestBody接收数据时，前端不能使用GET方式提交数据，而是用POST方式进行提交。
+在后端的同一个接收方法里，@RequestBody 与@RequestParam()可以同时使用，@RequestBody最多只能有一个，而@RequestParam()可以有多个。
+```
+
+
+
 ### 25.get和post请求
 
 ```sh
