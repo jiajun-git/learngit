@@ -1933,9 +1933,32 @@ public static int[] QuickSort(int[] array, int start, int end) {
     }
 ```
 
+### 22.spring、springMVC、mybatis
+
+SpringMVC可以按照如下思路学习
+
+- SpringMVC框架环境快速搭建
+- @RequestMapping的用法
+- ModelAndView的用法
+- 整合Spring+SpringMVC+MyBatis
+- 然后在学习SpringMVC框架高级部分
+
+##### springMVC--ModelAndView的用法
+
+```sh
+1. ModelAndView是什么以及它的作用是什么
+简单理解它是将后台返回的数据传递给View层，同时包含一个要访问的View层的URL地址
+当控制器处理完请求后，通常控制器会将包含视图名称以及一些模型属性的ModelAndView对象返回给DispatcherServlet。因此，在控制器中会构造一个ModelAndView对象
+ModelAndView作用
+设置转向地址
+将底层获取的数据进行存储（或者封装）
+最后将数据传递给View
+
+```
 
 
-### 22.spring boot
+
+### 23.spring boot
 
 spring boot项目中同时存在application.properties和application.yml文件时，两个文件都有效，但是application.properties的优先级会比application.yml高。
 
@@ -1999,9 +2022,9 @@ $ docker run -p 8080:8080 -t forezp/springboot-with-docker
 
 
 
-### 23.java泛型
+### 24.java泛型
 
-### 24.注解
+### 25.注解
 
 ##### RequestMapping
 
@@ -2030,6 +2053,41 @@ $ docker run -p 8080:8080 -t forezp/springboot-with-docker
 @postMapping = @requestMapping(method = RequestMethod.POST)。
 ```
 
+##### ResponseBody注解
+
+```sh
+1、概念
+注解 @ResponseBody，使用在控制层（controller）的方法上。
+2、作用
+作用：将方法的返回值，以特定的格式写入到response的body区域，进而将数据返回给客户端。当方法上面没有写ResponseBody,底层会将方法的返回值封装为ModelAndView对象。------>如果在一个方法上使用了@RequestMapping注解，这时候，方法的返回值通常解析为跳转的路径， 也就是说，要跳转到指定的jsp页面。在这个代码实例中，要跳转到的是 Hello World.jsp 页面。 如果添加了 @ResponseBody 这个注解， 则表明该方法的返回值直接写入到 HTTP Response Body 中。  这就是说，如果返回的是JSON， 就得必须添加 @ResponseBody 这个注解
+一般在异步获取数据时使用，在使用@RequestMapping后，返回值通常解析为跳转路径，加上@responsebody后返回结果不会被解析为跳转路径，而是直接写入HTTP response body中。比如异步获取json数据，加上@responsebody后，会直接返回json数据。
+如果返回值是字符串，那么直接将字符串写到客户端；如果是一个对象，会将对象转化为json串，然后写到客户端。
+3、注意编码
+如果返回对象,按utf-8编码。如果返回String，默认按iso8859-1编码，页面可能出现乱码。因此在注解中我们可以手动修改编码格式，例如@RequestMapping(value="/cat/query",produces="text/html;charset=utf-8")，前面是请求的路径，后面是编码格式。
+4、原理
+控制层方法的返回值是如何转化为json格式的字符串的？其实是通过HttpMessageConverter中的方法实现的，它本是一个接口，在其实现类完成转换。如果是bean对象，会调用对象的getXXX（）方法获取属性值并且以键值对的形式进行封装，进而转化为json串。如果是map集合，采用get(key)方式获取value值，然后进行封装。
+
+需要注意的呢，在使用此注解之后不会再走视图解析器，而是直接将数据写入到输入流中，他的效果等同于通过response对象输出指定格式的数据。
+
+例如：
+
+　　@RequestMapping("/login")
+　　@ResponseBody
+　　public User login(User user){
+　　　　return user;
+　　}
+　　User字段：userName pwd
+　　那么在前台接收到的数据为：'{"userName":"xxx","pwd":"xxx"}'
+
+　　效果等同于如下代码：
+　　@RequestMapping("/login")
+　　public void login(User user, HttpServletResponse response){
+　　　　response.getWriter.write(JSONObject.fromObject(user).toString());
+　　}
+```
+
+
+
 ##### RequestParam
 
 ```sh
@@ -2039,7 +2097,8 @@ $ docker run -p 8080:8080 -t forezp/springboot-with-docker
 value：参数名 
 required：是否包含该参数，默认为true，表示该请求路径中必须包含该参数，如果不包含就报错。
 defaultValue：默认参数值，如果设置了该值，required=true将失效，自动为false,如果没有传该参数，就使用默认值
-
+#用List接收从前台传过来的数据时@RequestParam("devIds[]")List<Integer> devIds
+用数组接收@RequestParam("devIds[]")Integer[] devIds
 ```
 
 ##### RequestBody
@@ -2083,7 +2142,7 @@ return mv;
 
 
 
-### 25.get和post请求
+### 26.get和post请求
 
 ```sh
 1请求方式
@@ -2104,7 +2163,7 @@ HTTP中定义了7种请求方式：POST、GET、HEAD、OPTIONS、DELETE、TRACE�
 
 ![1583846406827](D:\learngit\assets\1583846406827.png)
 
-### 26.Feign
+### 27.Feign
 
 #### Feign原理
 
@@ -2144,7 +2203,7 @@ public interface ServiceAFeignClient {
 }
 tools为服务B配置中的spring.application.name,  hi为B中Controller的接口
 
-### 27.  java事务管理注解原理-@Transactional
+### 28.  java事务管理注解原理-@Transactional
 
 ```sh
 1.同一个类中,一个未标注@Transactional的方法去调用标有@Transactional的方法,事务会失效。
@@ -2156,7 +2215,14 @@ tools为服务B配置中的spring.application.name,  hi为B中Controller的接�
 
 ```
 
-### 28.异常
+```sh
+#不用注解怎么实现事务？
+
+```
+
+
+
+### 29.异常
 
 1.异常结构图
 
