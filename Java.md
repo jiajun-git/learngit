@@ -1781,7 +1781,7 @@ zTree 是利用 JQuery 的核心代码，实现一套能完成大部分常用功
 
 zTree是一个依靠jQuery实现的多功能“树插件”。优异的性能、灵活的配置、多种功能的组合是zTree最大优点。
 
-### 20.redis
+### 20.Redis
 
 **Redis**是由C语言编写的开源、基于内存、支持多种数据结构、高性能的**Key-Value**数据库。
 
@@ -2060,7 +2060,7 @@ $ docker run -p 8080:8080 -t forezp/springboot-with-docker
 注解 @ResponseBody，使用在控制层（controller）的方法上。
 2、作用
 作用：将方法的返回值，以特定的格式写入到response的body区域，进而将数据返回给客户端。当方法上面没有写ResponseBody,底层会将方法的返回值封装为ModelAndView对象。------>如果在一个方法上使用了@RequestMapping注解，这时候，方法的返回值通常解析为跳转的路径， 也就是说，要跳转到指定的jsp页面。在这个代码实例中，要跳转到的是 Hello World.jsp 页面。 如果添加了 @ResponseBody 这个注解， 则表明该方法的返回值直接写入到 HTTP Response Body 中。  这就是说，如果返回的是JSON， 就得必须添加 @ResponseBody 这个注解
-一般在异步获取数据时使用，在使用@RequestMapping后，返回值通常解析为跳转路径，加上@responsebody后返回结果不会被解析为跳转路径，而是直接写入HTTP response body中。比如异步获取json数据，加上@responsebody后，会直接返回json数据。
+比如异步获取json数据，加上@responsebody后，会直接返回json数据。
 如果返回值是字符串，那么直接将字符串写到客户端；如果是一个对象，会将对象转化为json串，然后写到客户端。
 3、注意编码
 如果返回对象,按utf-8编码。如果返回String，默认按iso8859-1编码，页面可能出现乱码。因此在注解中我们可以手动修改编码格式，例如@RequestMapping(value="/cat/query",produces="text/html;charset=utf-8")，前面是请求的路径，后面是编码格式。
@@ -2119,7 +2119,13 @@ defaultValue：默认参数值，如果设置了该值，required=true将失效�
 ```sh
 @RequestBody主要用来接收前端传递给后端的json字符串中的数据的(请求体中的数据的);
 GET方式无请求体，所以使用@RequestBody接收数据时，前端不能使用GET方式提交数据，而是用POST方式进行提交。
-在后端的同一个接收方法里，@RequestBody 与@RequestParam()可以同时使用，@RequestBody最多只能有一个，而@RequestParam()可以有多个。
+在后端的同一个接收方法里，@RequestBody 与@RequestParam()可以同时使用，#@RequestBody最多只能有一个，而@RequestParam()可以有多个。
+其实请求参数永远都是一个，因为一个request中只包含一个request body. 理解了这个，就会明白Spring MVC不支持多个@RequestBody。
+至于要将一个request body中的content反序列化成几个Java实例是另外一个问题。
+解决方向：
+1.创建一个新的entity，将你的两个entity都进去。这是最简单的，但是不够“优雅”。
+2.用Map<String, Object>接受request body，自己反序列化到各个entity中。
+3.类似方法2，不过更为generic，实现自己的HandlerMethodArgumentResolver。请参考：https://sadique.io/blog/2016/01/30/using-custom-arguments-in-spring-mvc-controllers/
 ```
 
 ##### RestController 和Controller
@@ -2136,6 +2142,41 @@ public ModelAndView login(){
 ModelAndView mv = new ModelAndView("index");
 return mv;
 }
+```
+
+##### Param
+
+```java
+@Param：用来在DAO层中声明参数，如：
+List<News> selectByUserIdAndOffset(@Param("userId") int userId, @Param("offset") int offset, @Param("limit") int limit);
+当使用了使用@Param注解来声明参数时，可以使用多个参数,如果使用 #{} 或 ${} 的方式都可以。
+@Select("select entity from table where userId = ${userId} ")
+   public int selectEntity(@Param("userId") int userId);
+当不使用@Param注解来声明参数时，必须使用使用 #{}方式。如果使用 ${} 的方式，会报错：
+
+而#{}拿到值之后，拼装sql，会自动对值添加引号,${}则把拿到的值直接拼装进sql，如果需要加单引号，必须手动添加，一般用于动态传入表名或字段名使用，#{}传参能防止sql注入
+    
+解决模糊查询传参方法如下：
+      <1>方法参数前面使用注解@Param，然后sql语句中where条件中就可以使用${}进行传参
+      <2>不使用注解@Param时，where条件使用#{}传参：使用concat()函数拼接：
+       select name from user where name like concat('%',#{name},'%')     
+      <3>使用concat()函数拼接可以避免直接使用'%#{}%'，运行出错！    
+```
+
+##### ApiOperation
+
+```java
+@ApiOperation不是spring自带的注解是swagger里的 
+com.wordnik.swagger.annotations.ApiOperation;
+
+@ApiOperation和@ApiParam为添加的API相关注解，个参数说明如下： 
+@ApiOperation(value = “接口说明”, httpMethod = “接口请求方式”, response = “接口返回参数类型”, notes = “接口发布说明”；其他参数可参考源码； 
+@ApiParam(required = “是否必须参数”, name = “参数名称”, value = “参数具体描述”
+
+实际项目中非常需要写文档，提高Java服务端和Web前端以及移动端的对接效率。
+Swagger是当前最好用的Restful API文档生成的开源项目，通过swagger-spring项目
+实现了与SpingMVC框架的无缝集成功能，方便生成spring restful风格的接口文档，
+同时swagger-ui还可以测试spring restful风格的接口功能。
 ```
 
 
@@ -2240,3 +2281,194 @@ tools为服务B配置中的spring.application.name,  hi为B中Controller的接�
    ```
 
    
+
+### 30.StringUtils类
+
++ #### hasText
+
+  StringUtils.hasText()作用 
+
+  如果里面的值为null,"","  "，那么返回值为false；否则为true
+
+
+
+### 31.mybatis中mapper接口
+
+![image-20200525140704184](assets/image-20200525140704184.png)
+
+### 32.example
+
+mybatis的逆向工程中会生成实例及实例对应的example，example用于添加条件，相当where后面的部分
+xxxExample example = new xxxExample();
+Criteria criteria = new Example().createCriteria();
+![image-20200525142709435](assets/image-20200525142709435.png)
+
++ selectByExample() 和 selectByExampleWithBLOGs()
+
+```java
+UserExample example = new UserExample();
+Criteria criteria = example.createCriteria();
+criteria.andUsernameEqualTo("wyw");
+criteria.andUsernameIsNull();
+example.setOrderByClause("username asc,email desc");
+List<?>list = XxxMapper.selectByExample(example);
+//相当于：select * from user where username = 'wyw' and  username is null order by username asc,email desc
+```
+
++ updateByExample() 和 updateByExampleSelective()
+
+```java
+UserExample example = new UserExample();
+Criteria criteria = example.createCriteria();
+criteria.andUsernameEqualTo("admin");
+User user = new User();
+user.setPassword("wyw");
+XxxMapper.updateByPrimaryKeySelective(user,example);
+//相当于：update user set password='wyw' where username='admin'
+//updateByExample()更新所有的字段，包括字段为null的也更新，建议使用 updateByExampleSelective()更新想更新的字段
+```
+
++ countByExample()    查询数据数量
+
+```java
+UserExample example = new UserExample();
+Criteria criteria = example.createCriteria();
+criteria.andUsernameEqualTo("wyw");
+int count = XxxMapper.countByExample(example);
+//相当于：select count(*) from user where username='wyw'
+```
+
+### 33.session和cookie
+
+Web应用程序是使用HTTP协议传输数据的。**HTTP协议是无状态的协议。一旦数据交换完毕，客户端与服务器端的连接就会关闭，再次交换数据需要建立新的连接。这就意味着服务器无法从连接上跟踪会话**。即用户A购买了一件商品放入购物车内，当再次购买商品时服务器已经无法判断该购买行为是属于用户A的会话还是用户B的会话了。要跟踪该会话，必须引入一种**会话跟踪**机制。
+
+**会话（Session）跟踪**：
+
+　　会话，指用户登录网站后的一系列动作，比如浏览商品添加到购物车并购买。会话（Session）跟踪是Web程序中常用的技术，用来**跟踪用户的整个会话**。常用的会话跟踪技术是Cookie与Session。**Cookie通过在客户端记录信息确定用户身份，Session通过在服务器端记录信息确定用户身份。Session 与 Cookie 的作用都是为了保持访问用户与后端服务器的交互状态。**
+
++ **cookie**
+
+Cookie实际上是一小段的文本信息。客户端请求服务器，如果服务器需要记录该用户状态，就使用response向客户端浏览器颁发一个Cookie。客户端浏览器会把Cookie保存起来。当浏览器再请求该网站时，浏览器把请求的网址连同该Cookie一同提交给服务器。服务器检查该Cookie，以此来辨认用户状态。
+
+**cookie的使用**
+
+Java中把Cookie封装成了javax.servlet.http.Cookie类。每个Cookie都是该Cookie类的对象。服务器通过操作Cookie类对象对客户端Cookie进行操作。通过**request.getCookie()获取客户端提交的所有Cookie**（以Cookie[]数组形式返回），**通过response.addCookie(Cookiecookie)向客户端设置Cookie。**
+
+　　Cookie对象使用key-value属性对的形式保存用户状态，一个Cookie对象保存一个属性对，一个request或者response同时使用多个Cookie。因为Cookie类位于包javax.servlet.http.*下面，所以JSP中不需要import该类。
+
+**Cookie的不可跨域名性**
+
+很多网站都会使用Cookie。例如，Google会向客户端颁发Cookie，Baidu也会向客户端颁发Cookie。那浏览器访问Google会不会也携带上Baidu颁发的Cookie呢？或者Google能不能修改Baidu颁发的Cookie呢？
+
+　　答案是否定的。**Cookie具有不可跨域名性**。根据Cookie规范，浏览器访问Google只会携带Google的Cookie，而不会携带Baidu的Cookie。Google也只能操作Google的Cookie，而不能操作Baidu的Cookie。
+
+　　Cookie在客户端是由浏览器来管理的。浏览器能够保证Google只会操作Google的Cookie而不会操作Baidu的Cookie，从而保证用户的隐私安全。浏览器判断一个网站是否能操作另一个网站Cookie的依据是域名。Google与Baidu的域名不一样，因此Google不能操作Baidu的Cookie。
+
+需要注意的是，虽然网站images.google.com与网站www.google.com同属于Google，但是域名不一样，二者同样不能互相操作彼此的Cookie。
+
+**Cookie的有效期**
+
+　　Cookie的maxAge决定着Cookie的有效期，单位为秒（Second）。Cookie中通过getMaxAge()方法与setMaxAge(int maxAge)方法来读写maxAge属性。
+
+　　如果maxAge属性为正数，则表示该Cookie会在maxAge秒之后自动失效。浏览器会将maxAge为正数的Cookie持久化，即写到对应的Cookie文件中。无论客户关闭了浏览器还是电脑，只要还在maxAge秒之前，登录网站时该Cookie仍然有效。如果为负数（默认为–1），该Cookie为临时Cookie，关闭浏览器即失效，浏览器也不会以任何形式保存该Cookie。如果maxAge为0，则表示删除该Cookie。Cookie机制没有提供删除Cookie的方法，因此通过设置该Cookie即时失效实现删除Cookie的效果。失效的Cookie会被浏览器从Cookie文件或者内存中删除。下面代码中的Cookie信息将永远有效：
+
+**Cookie cookie = new Cookie("username","helloweenvsfei");  // 新建Cookie**
+
+**cookie.setMaxAge(Integer.MAX_VALUE);      // 设置生命周期为MAX_VALUE**
+
+**response.addCookie(cookie);**         **//注意设置最大时限后再addCookie,不然不生效**
+
+
+
+**Cookie的安全属性**
+
+　　HTTP协议不仅是无状态的，而且是不安全的。使用HTTP协议的数据不经过任何加密就直接在网络上传播，有被截获的可能。使用HTTP协议传输很机密的内容是一种隐患。如果不希望Cookie在HTTP等非安全协议中传输，可以设置Cookie的secure属性为true。浏览器只会在HTTPS和SSL等安全协议中传输此类Cookie。下面的代码设置secure属性为true：
+
+**Cookie cookie = new Cookie("time", "20080808"); // 新建Cookie**
+
+**cookie.setSecure(true);               // 设置安全属性**
+
+**response.addCookie(cookie);             // 输出到客户端** 
+
+　　提示：secure属性并不能对Cookie内容加密，因而不能保证绝对的安全性。如果需要高安全性，**需要在程序中对Cookie内容加密、解密，以防泄密。**
+
+
+
+
+
++ **session**
+
+Session是另一种记录客户状态的机制，不同的是Cookie保存在客户端浏览器中，而Session保存在服务器上。客户端浏览器访问服务器的时候，服务器把客户端信息以某种形式记录在服务器上。这就是Session。客户端浏览器再次访问时只需要从该Session中查找该客户的状态就可以了。
+
+**Session的生命周期**
+
+　　Session保存在服务器端。为了获得更高的存取速度，服务器一般把Session放在内存里。每个用户都会有一个独立的Session。如果Session内容过于复杂，当大量客户访问服务器时可能会导致内存溢出。因此，Session里的信息应该尽量精简。
+
+　　**Session在用户第一次访问服务器的时候自动创建**。需要注意只有访问JSP、Servlet等程序时才会创建Session，只访问HTML、IMAGE等静态资源并不会创建Session。如果尚未生成Session，也可以使用request.getSession(true)强制生成Session。
+
+　　Session生成后，只要用户继续访问，服务器就会更新Session的最后访问时间，并维护该Session。用户每访问服务器一次，无论是否读写Session，服务器都认为该用户的Session“活跃（active）”了一次。
+
+ 
+
+**Session的有效期**
+
+　　由于会有越来越多的用户访问服务器，因此Session也会越来越多。**为防止内存溢出，服务器会把长时间内没有活跃的Session从内存删除。这个时间就是Session的超时时间。如果超过了超时时间没访问过服务器，Session就自动失效了。**
+
+　　Session的超时时间为maxInactiveInterval属性，Tomcat中Session的默认超时时间为20分钟，可以通过对应的getMaxInactiveInterval()获取，通过setMaxInactiveInterval(longinterval)修改。
+
+　　Session的超时时间也可以在web.xml中修改。另外，通过调用Session的invalidate()方法可以使Session失效。
+
+
+
+**Session对浏览器的要求**
+
+　　虽然Session保存在服务器，对客户端是透明的，它的正常运行仍然需要客户端浏览器的支持。这是因为Session需要使用Cookie作为识别标志。HTTP协议是无状态的，Session不能依据HTTP连接来判断是否为同一客户，因此服务器向客户端浏览器发送一个名为JSESSIONID的Cookie，它的值为该Session的id（也就是HttpSession.getId()的返回值）。Session依据该Cookie来识别是否为同一用户。
+
+　　该Cookie为服务器自动生成的，它的maxAge属性一般为–1，表示仅当前浏览器内有效，并且各浏览器窗口间不共享，关闭浏览器就会失效。
+
+　　因此同一机器的两个浏览器窗口访问服务器时，会生成两个不同的Session。但是由浏览器窗口内的链接、脚本等打开的新窗口（也就是说不是双击桌面浏览器图标等打开的窗口）除外。这类子窗口会共享父窗口的Cookie，因此会共享一个Session。
+
+　　**注意：新开的浏览器窗口会生成新的Session，但子窗口除外。子窗口会共用父窗口的Session。例如，在链接上右击，在弹出的快捷菜单中选择“在新窗口中打开”时，子窗口便可以访问父窗口的Session。**
+
+　　**如果客户端浏览器将Cookie功能禁用，或者不支持Cookie怎么办？例如，绝大多数的手机浏览器都不支持Cookie。Java Web提供了另一种解决方案：URL地址重写。**
+
+**URL地址重写实现**？？？？？？
+
+
+
++ **cookie和session的区别**
+
+**1、cookie数据存放在客户的浏览器上，session数据放在服务器上.**
+**2、cookie不是很安全，别人可以分析存放在本地的COOKIE并进行COOKIE欺骗考虑到安全应当使用session。**
+
+**3、设置cookie时间可以使cookie过期。但是使用session-destory（），我们将会销毁会话。**
+**4、session会在一定时间内保存在服务器上。当访问增多，会比较占用你服务器的性能考虑到减轻服务器性能方面，应当使用cookie。**
+**5、单个cookie保存的数据不能超过4K，很多浏览器都限制一个站点最多保存20个cookie。(Session对象没有对存储的数据量的限制，其中可以保存更为复杂的数据类型)**
+
+ 
+
+  **注意:**
+
+   session很容易失效,用户体验很差;
+
+   虽然cookie不安全,但是可以加密 ;
+
+   cookie也分为永久和暂时存在的;
+
+   浏览器 有禁止cookie功能 ,但一般用户都不会设置;一定要设置失效时间,要不然浏览器关闭就消失了
+
+   例如:
+
+​      记住密码功能就是使用永久cookie写在客户端电脑，下次登录时，自动将cookie信息附加发送给服务端。
+
+   
+
+ **两者最大的区别在于生存周期，一个是IE启动到IE关闭.(浏览器页面一关 ,sessionid就消失了,再次访问后，服务器又生成一个新的JSESSIONID，此时request.getSession()通过JSESSIONID获取到的session就不是之前的session了。)，一个是预先设置的生存周期，或永久的保存于本地的文件。(cookie)**
+
+ 
+
+
+
+### 34.jwt实现登录
+
+##### 1.jwt原理
