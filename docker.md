@@ -261,8 +261,14 @@ Kubernetes = 容器资源管理 + 集群编排
 
 
 
+![image-20200714140110209](assets/image-20200714140110209.png)
 
 
 
-
+```sh
+#操作命令
+docker-compose -f ecard-compose.yaml up -d            -----启动服务
+docker-compose -f nacos-compose.yaml up -d            -----启动nacos
+docker-compose -f ecard-compose.yaml restart 容器名    -----重启某个服务
+```
 
