@@ -533,5 +533,15 @@ iptables -I OUTPUT -d 10.136.21.1  -j DROP
 iptables -D OUTPUT -d 10.136.21.1  -j DROP
 ```
 
+### 32.查看开放的端口
+
+```sh
+firewall-cmd --list-ports     --防火墙开启情况下
+systemctl status firewalld    --查看防火墙状态
+systemctl start firewalld     --开启防火墙
+firewall-cmd --zone=public --add-port=10026/tcp --permanent   --开启端口
+firewall-cmd --reload         --重启生效
+```
+
 
 

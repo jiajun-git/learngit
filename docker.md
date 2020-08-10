@@ -272,3 +272,24 @@ docker-compose -f nacos-compose.yaml up -d            -----启动nacos
 docker-compose -f ecard-compose.yaml restart 容器名    -----重启某个服务
 ```
 
+```sh
+#安装activemq
+docker search activemq
+docker pull webcenter/activemq
+docker image
+docker run -d --name activemq -p 8161:8161  -p 61613:61613 -p 1883:1883 -p 61616:61616 webcenter/activemq
+（1883为mqtt端口，8161是后台管理系统，61616是给java用的tcp端口）
+```
+
+```sh
+#如果安装docker镜像时速度很慢，修改下载地址
+设置docker拉取镜像加速
+需要修改配置文件，Docker 使用 /etc/docker/daemon.json来配置daemon。
+vi /etc/docker/daemon.json
+在配置文件中加入
+{
+"registry-mirrors": ["http://hub-mirror.c.163.com"]
+}
+systemctl restart docker
+```
+

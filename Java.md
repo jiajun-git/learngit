@@ -2484,3 +2484,39 @@ Session是另一种记录客户状态的机制，不同的是Cookie保存在客�
 ### 35.网络协议
 
 ![img](assets/20180805195546729.png)
+
+### 36.activemq
+
+```sh
+ActiveMQ的持久化订阅
+默认情况下，ActiveMQ的发布订阅模式是不做持久化处理的，也就是说，采用发布订阅模式，发布者发布消息时，如果消费者不在线，该消息就丢失了，即便消费者再上线，也不会收到离线时的消息。我们可以做一些设置，使得消费者上线后，也能收到离线时的消息。
+```
+
+![image-20200729092706181](assets/image-20200729092706181.png)
+
+```sh
+activemq的高级特性：通配符式分层订阅
+activemq的高级特性之通配符式分层订阅
+
+　　队列的名称可以分层：aa.bb.cc.dd
+
+　　可以匹配：aa.bb.cc.dd，aa.*.cc.dd，aa.>
+
+　　*：匹配当前层的内容
+
+　　>：任何一层的都能匹配
+
+　　已点分层
+```
+
+### 37.java8新特性
+
+```java
+ List<AceFaceParam> aceFaceParam = aceCustAuthService.queryAceFaceParam();
+//找出aceFaceParam对象中各个参数为0的devSn
+        List<String> sysParamList=aceFaceParam.stream().filter(item ->item.getSysParam().equals(0)).map(item ->item.getDevSn()).collect(Collectors.toList());
+        List<String> voiceParamList=aceFaceParam.stream().filter(item ->item.getVoiceParam().equals(0)).map(item ->item.getDevSn()).collect(Collectors.toList());
+        List<String> openParamList=aceFaceParam.stream().filter(item ->item.getOpenParam().equals(0)).map(item ->item.getDevSn()).collect(Collectors.toList());
+        List<String> mqttParamList=aceFaceParam.stream().filter(item ->item.getMqttParam().equals(0)).map(item ->item.getDevSn()).collect(Collectors.toList());
+```
+
