@@ -533,7 +533,7 @@ iptables -I OUTPUT -d 10.136.21.1  -j DROP
 iptables -D OUTPUT -d 10.136.21.1  -j DROP
 ```
 
-### 32.查看开放的端口
+## 32.查看开放的端口
 
 ```sh
 firewall-cmd --list-ports     --防火墙开启情况下

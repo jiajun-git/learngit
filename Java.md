@@ -1,4 +1,4 @@
-## Java
+##        Java
 
 <https://snailclimb.top/JavaGuide/#/?id=%e5%ae%b9%e5%99%a8>
 
@@ -2298,7 +2298,31 @@ tools为服务B配置中的spring.application.name,  hi为B中Controller的接�
 
   如果里面的值为null,"","  "，那么返回值为false；否则为true
 
++ #### isEmpty
 
+  public static boolean isEmpty(String str)
+  判断某字符串是否为空，为空的标准是 str==null 或 str.length()==0
+  下面是 StringUtils 判断是否为空的示例：
+
+  ​      StringUtils.isEmpty(null) = true
+  ​      StringUtils.isEmpty("") = true
+  ​      StringUtils.isEmpty(" ") = false //注意在 StringUtils 中空格作非空处理
+  ​      StringUtils.isEmpty("  ") = false
+  ​      StringUtils.isEmpty("bob") = false
+  ​      StringUtils.isEmpty(" bob ") = false
+
+  
+
+   public static boolean isNotEmpty(String str)
+   判断某字符串是否非空，等于 !isEmpty(String str)
+   下面是示例：
+
+  ​       StringUtils.isNotEmpty(null) = false
+  ​       StringUtils.isNotEmpty("") = false
+  ​       StringUtils.isNotEmpty(" ") = true
+  ​       StringUtils.isNotEmpty("     ") = true
+  ​       StringUtils.isNotEmpty("bob") = true
+  ​       StringUtils.isNotEmpty(" bob ") = true
 
 ### 31.mybatis中mapper接口
 
@@ -2484,6 +2508,8 @@ Session是另一种记录客户状态的机制，不同的是Cookie保存在客�
 ### 35.网络协议
 
 ![img](assets/20180805195546729.png)
+
+#### MQTT
 
 ### 36.activemq
 

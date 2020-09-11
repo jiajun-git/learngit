@@ -60,6 +60,9 @@ docker exec -it 名字或id ls -l /tmp   在容器中打开新的终端，并可
 (docker exec -it openstack-pythonAPI-test bash)
 docker attach 名字或id   重新进入容器中,不会启动新的进程
 docker cp 容器id:/tmp/yum.log /root               从容器内拷贝数据到主机上
+
+容器停止退出，命令：exit
+容器不停止退出，命令：ctrl+P+Q
 ```
 
 
@@ -270,13 +273,14 @@ Kubernetes = 容器资源管理 + 集群编排
 docker-compose -f ecard-compose.yaml up -d            -----启动服务
 docker-compose -f nacos-compose.yaml up -d            -----启动nacos
 docker-compose -f ecard-compose.yaml restart 容器名    -----重启某个服务
+docker-compose -f nacos-compose.yaml down
 ```
 
 ```sh
 #安装activemq
 docker search activemq
 docker pull webcenter/activemq
-docker image
+docker images
 docker run -d --name activemq -p 8161:8161  -p 61613:61613 -p 1883:1883 -p 61616:61616 webcenter/activemq
 （1883为mqtt端口，8161是后台管理系统，61616是给java用的tcp端口）
 ```
@@ -291,5 +295,52 @@ vi /etc/docker/daemon.json
 "registry-mirrors": ["http://hub-mirror.c.163.com"]
 }
 systemctl restart docker
+```
+
+```sh
+#删除images
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/consumer-kernel-gateway:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/consumer-cloudapi:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/consumer-center:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/provider-monitor:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/provider-oauth:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/consumer-web:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/provider-kernel:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/base-service:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/consumer-interface:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/ecard-consumer-accessinterface:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/provider-log-service:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/consumer-self-service:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/ecard-consumer-studentweb:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/ecard-consumer-wisedu:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/provider-report:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/ecard-consumer-accessweb:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/ecard-provider-sync-third-mysql:1.2.1-20200831-5
+docker rmi -f registry.cn-shanghai.aliyuncs.com/ecard/ecard-consumer-manageweb:1.2.1-20200831-5
+
+-------------------------------------------------------------------------------------
+#停容器
+docker stop ecard-consumer-cloudapi ecard-consumer-interface ecard-consumer-accessinterface ecard-consumer-accessweb ecard-consumer-manageweb ecard-provider-sync-third-mysql ecard-consumer-self-service ecard-provider-monitor ecard-provider-oauth ecard-provider-kernel ecard-base-service ecard-consumer-wisedu ecard-provider-log ecard-consumer-web ecard-consumer-kernel-gateway ecard-provider-report ecard-consumer-center ecard-consumer-studentweb
+
+sudo docker stop/start $(docker ps -a | awk ‘{ print $1}’ | tail -n +2)
+杀死所有正在运行的容器
+docker kill $(docker ps -a -q)
+删除所有已经停止的容器
+docker rm $(docker ps -a -q)
+删除所有未打 dangling 标签的镜
+docker rmi $(docker images -q -f dangling=true)
+删除所有镜像
+docker rmi $(docker images -q)
+强制删除 无法删除的镜像docker rmi -fdocker rmi -f $(docker images -q)
+
+```
+
+```sh
+#打成images,进入dockerfile文件的目录
+docker build -t registry.cn-shanghai.aliyuncs.com/ecard/base-service:1.2.2-20200831-5 .
+(.代表当前目录)
+#push到远程
+docker tag 镜像id registry.cn-shanghai.aliyuncs.com/ecard/base-service:1.2.2-20200831-5
+docker push registry.cn-hangzhou.aliyuncs.com/zzyybuy/mycentos:版本号
 ```
 
