@@ -344,3 +344,10 @@ docker tag 镜像id registry.cn-shanghai.aliyuncs.com/ecard/base-service:1.2.2-2
 docker push registry.cn-hangzhou.aliyuncs.com/zzyybuy/mycentos:版本号
 ```
 
+```sh
+#起jar包
+ps -ef | grep java
+kill -9 进程id
+nohup java -jar win.jar &
+```
+
