@@ -351,3 +351,22 @@ kill -9 进程id
 nohup java -jar win.jar &
 ```
 
+```sh
+#查看开放端口
+firewall-cmd --list-ports     --防火墙开启情况下
+systemctl status firewalld    --查看防火墙状态
+systemctl start firewalld     --开启防火墙
+firewall-cmd --zone=public --add-port=10026/tcp --permanent   --开启端口
+firewall-cmd --reload         --重启生效
+```
+
+
+
+
+
+
+
+```sh
+阿里云服务器   rKoQ01
+```
+
