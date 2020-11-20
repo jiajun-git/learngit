@@ -543,5 +543,134 @@ firewall-cmd --zone=public --add-port=10026/tcp --permanent   --开启端口
 firewall-cmd --reload         --重启生效
 ```
 
+## 33.Linux安装宝塔
 
+```sh
+yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_6.0.sh && sh install.sh
+```
+
+![image-20201112092318762](assets/image-20201112092318762.png)
+
+安装后的图
+
+浏览器登录  http://116.62.165.114:8888/
+
+在页面输入： rm -f /www/server/panel/data/admin_path.pl
+
+![image-20201112093649100](assets/image-20201112093649100.png)
+
+然后登录即可
+
+[宝塔面板常用命令](https://www.chenxunyun.com/article/168.html)
+
+查看宝塔登录账号以及ip：bt default
+
+## 34.linux安装nginx
+
+```sh
+Nginx的安装依赖于以下三个包，意思就是在安装Nginx之前首先必须安装以下的三个包，注意安装顺序如下:
+#1 SSL功能需要openssl库，直接通过yum安装: 
+yum install openssl
+#2 gzip模块需要zlib库，直接通过yum安装: 
+yum install zlib
+#3 rewrite模块需要pcre库，直接通过yum安装: 
+yum install pcre
+
+安装nginx依赖：
+rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+
+安装nginx:
+yum install nginx
+
+启动nginx:
+service nginx start
+
+开放80端口：
+#查看已开放的端口：
+firewall-cmd --list-ports
+#默认80端口加入防火墙访问白名单中：
+firewall-cmd --permanent --zone=public --add-port=80/tcp
+#使用命令使其生效：
+firewall-cmd --reload
+
+```
+
++ **ngnix配置负载均衡**
+
+```shell
+upstream load_balance_server {
+  server    116.62.165.114:10001 weight=6;#根据上面IIS配置
+  server    116.62.165.114:10002 weight=6;
+}
+server {
+    listen      80;
+    server_name  sunjiajun.meetorange.cn;
+
+    #charset koi8-r;
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        proxy_pass http://load_balance_server;
+        proxy_set_header Host $host;
+#        root   /usr/share/nginx/html;
+#        index  index.html index.htm;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+```
+
+![image-20201120154449188](assets/image-20201120154449188.png)
+
++ **重启ngnix**
+
+```sh
+nginx -s reload
+```
+
++ **若想配置反代多个端口，增加配置即可**
+
+![image-20201120162437878](assets/image-20201120162437878.png)
+
++ **彻底卸载ngnix**
+
+```sh
+#1.首先输入命令 ps -ef | grep nginx检查一下nginx服务是否在运行。
+[root@localhost /]# ps -ef |grep nginx
+root       3163   2643  0 14:08 tty1     00:00:00 man nginx
+root       5427      1  0 14:50 ?        00:00:00 nginx: master process nginx
+nginx      5428   5427  0 14:50 ?        00:00:00 nginx: worker process
+root       5532   2746  0 14:52 pts/0    00:00:00 grep --color=auto nginx
+
+#2.停止Nginx服务
+[root@localhost /]# /usr/sbin/nginx -s stop
+[root@localhost /]# netstat -lntp
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      1/systemd          
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1261/sshd           
+tcp6       0      0 :::111                  :::*                    LISTEN      1/systemd           
+tcp6       0      0 :::22                   :::*                    LISTEN      1261/sshd
+
+#3.查找、删除Nginx相关文件
+[root@localhost /]# find / -name nginx
+/usr/lib64/perl5/vendor_perl/auto/nginx
+/usr/lib64/nginx
+/usr/share/nginx
+/usr/sbin/nginx
+/etc/logrotate.d/nginx
+/etc/nginx
+/var/lib/nginx
+/var/log/nginx
+依次删除find查找到的所有目录：rm -rf /usr/sbin/nginx ...
+
+#4.再使用yum清理
+[root@localhost /]# yum remove nginx
+```
 

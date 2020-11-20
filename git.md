@@ -616,11 +616,26 @@ $ git config --global alias.st status
 https://www.liaoxuefeng.com/wiki/896043488029600/899998870925664
 ```
 
+### 11.idea创建springboot项目
+
++ 新建仓库
+
+![image-20201106170321815](assets/image-20201106170321815.png)
 
 
 
+![image-20201106170400962](assets/image-20201106170400962.png)
 
++ 添加权限
 
+![image-20201106170518691](assets/image-20201106170518691.png)
 
++ 新建springboot项目
 
+  ![image-20201106170907563](assets/image-20201106170907563.png)
 
++ 添加远程地址
+
+  ![image-20201106171413751](assets/image-20201106171413751.png)
+
++ 然后再commit push即可
