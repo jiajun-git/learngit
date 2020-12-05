@@ -366,3 +366,177 @@ select length(N'中华1') from dual --返回3，因为只有3个字符嘛。
 
 
 
+### 8.实战中的sql语句
+
+#### 1.将两条查询语句显示在同一行
+
+1.with
+
+```xml
+WITH
+        A AS (
+        SELECT T1.ACCOUNT_NUM accountNum,T2.NAME oldAccountName,T2.ID_CARD oldIdCard,T2.PHONE oldPhone
+        FROM CT_CUST_TRANSFERRECORD T1
+        LEFT JOIN CT_CUST_INFO T2 ON T1.OLD_CUST_ID = T2.ID),
+        B AS (
+        SELECT T1.ACCOUNT_NUM,T2.NAME newAccountName,T2.ID_CARD newIdCard,T2.PHONE newPhone
+        FROM CT_CUST_TRANSFERRECORD T1
+        LEFT JOIN CT_CUST_INFO T2 ON T1.NEW_CUST_ID = T2.ID)
+        SELECT * FROM A,B
+
+这样查询出来的数据会显示重复的多条？是个问题
+```
+
+2.关联查询，两次关联同一张表
+
+```xml
+SELECT T1.ACCOUNT_NUM accountNum,
+        T2.NAME oldAccountName,
+        T2.ID_CARD oldIdCard,
+        T2.PHONE oldPhone,
+        T3.NAME newAccountName,
+        T3.ID_CARD newIdCard,
+        T3.PHONE newPhone
+        FROM CT_CUST_TRANSFERRECORD T1
+        LEFT JOIN CT_CUST_INFO T2 ON T1.OLD_CUST_ID = T2.ID
+        LEFT JOIN CT_CUST_INFO T3 ON T1.NEW_CUST_ID = T3.ID
+```
+
+#### 2.将两个字段显示在一个字段
+
+```sh
+sqlserver：
+select 发文单位+文号 as 发文单位文号 from table;
+ 
+oracle：
+select 发文单位||文号 as 发文单位文号 from table;
+select concat(发文单位,文号) as 发文单位文号 from table;
+ 
+mysql：
+select concat(发文单位,文号) as 发文单位文号 from table;
+```
+
+#### 3.增加表字段语句
+
+```xml
+alter table 表明 add column 字段名 varchar(50) DEFAULT NULL COMMENT '备注信息';
+```
+
+#### 4.select 1
+
+```sh
+1：select  1 from kc     增加临时列，每行的列值是写在select后的数，这条sql语句中是1
+2：select count(1)  from kc   不管count(a)的a值如何变化，得出的值总是kc表的行数
+3：select sum(1) from kc   计算临时列的和\
+
+1：测试结果，得出一个行数和kc表行数一样的临时列（暂且这么叫，我也不知道该叫什么），每行的列值是1；
+2：得出一个数，该数是kc表的行数；
+3：得出一个数，该数是kc表的行数；
+然后我又用“2”测试，结果如下：
+1：得出一个行数和kc表行数一样的临时列，每行的列值是2；
+2：得出一个数，该数是kc表的行数；
+3：得出一个数，该数是kc表的行数×2的数
+然后我又用更大的数测试：
+1：得出一个行数和kc表行数一样的临时列，每行的列值是我写在select后的数；
+2：还是得出一个数，该数是kc表的行数；
+3：得出一个数，该数是table表的行数×写在select后的数
+```
+
+#### 5.oracle中merge into用法解析
+
+``` xml
+merge into的形式：
+MERGE INTO [target-table] A 
+USING [source-table sql] B
+ON([conditional expression] and [...]...)
+WHEN MATCHED THEN
+[UPDATE sql]
+WHEN NOT MATCHED THEN
+[INSERT sql]
+作用:判断Ｂ表和Ａ表是否满足ON中条件，如果满足则用B表去更新A表，如果不满足，则将B表数据插入A表但是有很多可选项，如下:
+1.正常模式
+2.只update或者只insert
+3.带条件的update或带条件的insert
+4.全插入insert实现
+5.带delete的update(觉得可以用3来实现)
+
+传入的是一个id集合
+MERGE INTO ss_floor s
+        USING (
+        <foreach collection="idList" item="id" separator="union all">
+            SELECT #{id} AS id FROM dual
+        </foreach>
+        ) a
+        ON ( a.id=s.id)
+        WHEN MATCHED THEN
+        UPDATE SET NAME = #{buildName},
+        FLOORCOUNT = #{floorCount}
+        WHEN NOT MATCHED THEN
+        INSERT (id,name,remark,addid,addname,adddate,idelete,editid,editname,editdate,floorcount)
+        VALUES(#{id},#{buildName},null,0,'sysadmin',SYSDATE,0,0,'sysadmin',SYSDATE,#{floorCount})
+
+传入单个id
+MERGE INTO ss_building s
+          USING (SELECT #{id} AS id FROM dual) a
+          ON ( a.id=s.id)
+          WHEN MATCHED THEN
+          UPDATE SET NAME = #{buildName},
+              FLOORCOUNT = #{floorCount}
+          WHEN NOT MATCHED THEN
+          INSERT (id,name,remark,addid,addname,adddate,idelete,editid,editname,editdate,floorcount)
+          VALUES(#{id},#{buildName},null,0,'sysadmin',SYSDATE,0,0,'sysadmin',SYSDATE,#{floorCount})
+
+```
+
+#### 6.数据库触发器
+
+```xml
+语法： 
+CREATE
+    TRIGGER `jony_keer`.`ins_account` AFTER INSERT
+    ON `jony_keer`.`t_account`
+    FOR EACH ROW BEGIN
+    INSERT INTO `t_user`(`userid`,`cellphone`,`account_psd`)  VALUES  (new.`account_id`,new.`cellphone`,new.`account_psd`);
+    END$$
+
+
+TRIGGER  触发器
+`jony_keer`.`ins_account` 触发器名称   jony_keer是我的数据库名字  ins_account 才是实际的触发器名称
+AFTER 表示 执行条件，有 BEFORE（之前 ） AFTER（之后）
+INSERT ON 表示在执行了 插入操作  ,有INSERT/UPDATE/DELETE 三种 
+`jony_keer`.`t_account` 接下来的这个是表示触发器所在的表（可以理解为 触发器在t_account 表插入一组出具后执行）
+FOR EACH ROW BEGIN  固定用法  后面跟你要做的事情例如我要做的事情是在t_user表中插入
+`userid`,`cellphone`,`account_psd` 三个记录
+INSERT INTO `t_user`(`userid`,`cellphone`,`account_psd`)  VALUES  (new.`account_id`,new.`cellphone`,new.`account_psd`);
+new 其实就是t_account 表中插入的数据  我们把 t_account 表中插入的  account_id  cellphone account_psd 赋值给t_user表中的 userid  cellphone account_psd
+
+```
+
+#### 7.查询数据库版本
+
+```xml
+SELECT * FROM  V$VERSION;
+```
+
+#### 8.mysql有则更新，无则插入
+
+```xml
+INSERT INTO p_access_record  (id,area_name,dev_name,record_time,create_time,card_no,open_type,direction,appoint_id)
+    VALUES (#{accessExternalRecordDto.id},
+    #{accessExternalRecordDto.areaName},
+    #{accessExternalRecordDto.devName},
+    str_to_date(#{accessExternalRecordDto.recordTime},'%Y-%m-%d %H:%i:%s'),
+    current_timestamp,
+    #{accessExternalRecordDto.cardNo},
+    #{accessExternalRecordDto.type},
+    #{accessExternalRecordDto.direction},
+    #{accessExternalRecordDto.appointId}
+    )
+    ON DUPLICATE KEY UPDATE update_time=current_timestamp;
+
+on duplicate key update
+当primary或者unique重复时，则执行update语句
+```
+
+
+

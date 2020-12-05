@@ -567,6 +567,8 @@ yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_
 
 ## 34.linux安装nginx
 
+#### 安装步骤
+
 ```sh
 Nginx的安装依赖于以下三个包，意思就是在安装Nginx之前首先必须安装以下的三个包，注意安装顺序如下:
 #1 SSL功能需要openssl库，直接通过yum安装: 
@@ -595,7 +597,7 @@ firewall-cmd --reload
 
 ```
 
-+ **ngnix配置负载均衡**
+#### ngnix配置负载均衡
 
 ```shell
 upstream load_balance_server {
@@ -638,7 +640,7 @@ nginx -s reload
 
 ![image-20201120162437878](assets/image-20201120162437878.png)
 
-+ **彻底卸载ngnix**
+#### 彻底卸载ngnix
 
 ```sh
 #1.首先输入命令 ps -ef | grep nginx检查一下nginx服务是否在运行。

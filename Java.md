@@ -2264,9 +2264,26 @@ tools为服务B配置中的spring.application.name,  hi为B中Controller的接�
 
 ```
 
-```sh
-#不用注解怎么实现事务？
+``` java
+//不用注解怎么实现事务？ --->手动开启事务
+@Autowired  
+private PlatformTransactionManager platformTransactionManager;
 
+@Autowired
+private TransactionDefinition transactionDefinition;
+
+TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
+ try{
+   //数据库操作
+   platformTransactionManager.commit(transactionStatus);
+ }catch (Exception e){
+   log.info("异常：" + e.getMessage());
+   platformTransactionManager.rollback(transactionStatus);
+ }
+ 
+ https://www.cnblogs.com/ll409546297/p/11076258.html
+ 
+ //类似于手动开启事务或者注解形式的事务，都会增加与数据库的交互，从而影响性能，如果想减少数据库操作，可以在存储过程中包事务。
 ```
 
 
@@ -2466,6 +2483,18 @@ Session是另一种记录客户状态的机制，不同的是Cookie保存在客�
 
 **URL地址重写实现**？？？？？？
 
+```sh
+#session实现登录
+服务器可以为每个用户浏览器创建一个会话对象（session对象），注意：一个浏览器独占一个session对象(默认情况下)。因此，在需要保存用户数据时，服务器程序可以把用户数据写到用户浏览器独占的session中，当用户使用浏览器访问其它程序时，其它程序可以从用户的session中取出该用户的数据，为用户服务。
+当服务器创建完session对象后，会把session对象的id以cookie形式返回给客户端。这样，当用户保持当前浏览器的情况下再去访问服务器时，会把session的id传给服务器，服务器根据session的id来为用户提供相应的服务。（也就是说服务端根据你传过来的sessionid来找到对应session从而取值，因为session是存在服务器端的）
+
+当关闭浏览器时，cookie被清除了需要重新登录，是因为springboot默认设置cookie级别为session级别，会话关闭就清除了session，需要手动配置，这样关闭浏览器后也不会重新登录。
+#设置cookie的过期时间
+server.servlet.session.cookie.max-age=43200  （单位：秒）
+```
+
+
+
 
 
 + **cookie和session的区别**
@@ -2552,9 +2581,7 @@ activemq的高级特性之通配符式分层订阅
 
 ### 38.nginx
 
-+ **正向代理和反向代理
-
-  
++ **正向代理和反向代理**
 
 ```sh
 #那么什么又是正向代理呢？
@@ -2566,4 +2593,34 @@ activemq的高级特性之通配符式分层订阅
 ```
 
 ![image-20201120163251394](assets/image-20201120163251394.png)
+
+### 39.域名服务器
+
+#### 为啥用ip不可以访问知乎，而百度却可以？
+
+```sh
+我们先来ping知乎的域名，然后可以得到响应的服务器的ip   ===>58.49.157.160
+之后我们用浏览器来访问这个ip  ===>被拒绝访问了
+而用ip来访问百度，则没啥问题
+
+访问知乎的时候，域名可以访问，ip不可以访问，这究竟是为啥？
+
+ipv4的ip地址是非常有限的，如果每个人都想拥有一个全球ip，那肯定是不够分配的，所以，很多网站在发布的时候，是有可能几个域名共用一个CDN服务器的
+```
+
+![img](assets/1686648c0d038935)
+
+```sh
+稍微解释下CDN是啥： CDN服务器可以说是一种缓存服务器。当我们要访问某个网站的资源时，如果该网站的服务器离我们很远，这样的话响应速度就会很慢，为了让响应速度快一些，我们可以把资源分布放在各个地方，然后响应客户端的时候，把离客户端较近的资源传送给他,ping出来的ip也就是CDN服务器的ip.
+
+当我们用域名访问知乎的时候，CDN服务器可以根据访问的域名知道你想要的是哪个网站的资源，然后直接给你返回对应的资源。
+
+但是当你用公网ip访问就不一样了，由于一个CDN服务器的公网ip对应多个域名网站，他不知道你想要的是哪个网站的资源，也就是说，当你用 118.89.204.192 去访问知乎的时候，CDN服务器不知道你要访问的是 zhihu.com，还是访问 a.com 或 b.com，所以他也干脆明了点，直接拒绝你的访问。
+
+访问的时候，DNS服务器都会帮们我把域名解析成ip去访问，CDN服务器之所以能够检测到对应的域名，其实是这样的:
+当客户端用域名访问知乎的时候，DNS会解析成对应的ip去访问CDN服务器，然后CDN服务器可以根据SNI机制获得该ip对应的来源域名，然后返回对应的资源
+
+为啥百度ip和域名都可以访问呢？
+这其实很简单，就是百度用的CDN服务器，只对应一个网站域名呗，说白了，就是百度有钱！
+```
 
