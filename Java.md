@@ -647,7 +647,7 @@ Object 类中的 notify() 方法，唤醒在此对象监视器上等待的单个
 
 ##### 代码演示
 
-```sh
+``` java
 #继承Thread
 public class Dog extends Thread{
     @Override
@@ -2305,7 +2305,7 @@ TransactionStatus transactionStatus = platformTransactionManager.getTransaction(
    对于unchecked异常，无非主要是两种情况要么是可以避免的（Runtime Exception），要么是不可控制的。这些也是需要声明异常的。
    ```
 
-   
+   [[springboot 2.x处理404、500等异常]](https://www.cnblogs.com/hzhh123/p/10881356.html)
 
 ### 30.StringUtils类
 
@@ -2537,6 +2537,110 @@ server.servlet.session.cookie.max-age=43200  （单位：秒）
 ![image-20200920161025419](assets/image-20200920161025419.png)
 
 ![image-20201025172615506](assets/image-20201025172615506.png)
+
+```sh
+#一个jwt实际上就是一个字符串，它由三部分组成，头部、载荷与签名，这三个部分都是json格式。
+#头部（Header）
+头部用于描述关于该JWT的最基本的信息，例如其类型以及签名所用的算法等。
+{
+  "typ": "JWT",
+  "alg": "HS256"
+}
+我们说明了这是一个JWT，并且我们所用的签名算法是HS256算法。
+
+#载荷（Payload）
+载荷可以用来放一些不敏感的信息。（将一些常用数据放在jwt中，可以避免频繁的进行库查询操作，缓解服务器压力--->优点之一）
+例：
+public class JwtUserModel {
+    private Integer id;
+    private String name;
+    private Integer devDeptId;
+    private String account;
+    private String legalPersonCode;
+    private Integer status;
+    private Integer identityType;
+    private String legalPersonName;
+    private List<String> access;
+    private Date validateTime;
+}
+#签名（signature）
+最后，我们将上面拼接完的字符串用HS256算法进行加密。在加密的时候，我们还需要提供一个密钥（secret）。加密后的内容也是一个字符串，最后这个字符串就是签名，把这个签名拼接在刚才的字符串后面就能得到完整的jwt。header部分和payload部分如果被篡改，由于篡改者不知道密钥是什么，也无法生成新的signature部分，服务端也就无法通过，在jwt中，消息体是透明的，使用签名可以保证消息不被篡改。
+v3系统中生成sign存入库中，即token
+ String accessToken = UUID.randomUUID().toString().replaceAll("-", "");
+```
+
+![image-20201208102824969](assets/image-20201208102824969.png)
+
+##### 2.jwt登录流程
+
+```java
+//1.验证账号是否存在,查询数据库检查账户信息
+ SsManagerInfo ssManagerInfo = new SsManagerInfo();
+ ssManagerInfo.setAccount(username);
+ ssManagerInfo.setLegalPersonCode(legalpersoncode);
+ SsManagerInfo managerInfo = oauthManagerService.selectOne(ssManagerInfo);
+//2.生成 access-token 存入 redis、oracle中
+ String accessToken = UUID.randomUUID().toString().replaceAll("-", "");
+//3.签发JWT
+//构建头信息
+ Map<String, Object> map = new HashMap<String, Object>();
+ map.put("alg", "HS256");
+ map.put("typ", "JWT");
+//构建秘钥信息
+ DateTimeFormatter ofPattern = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+ ZoneId zoneId = ZoneId.systemDefault();
+ Algorithm algorithm = Algorithm.HMAC256(accessToken);
+ String token = JWT.create().withHeader(map)
+                .
+                .
+                .
+     
+//4.将jwt存入cookie中
+ JwtUserModel jwtUserModel = authentication.getJwtUserModel();
+ Cookie cookie = new Cookie("userjwt", authentication.getJwt());
+ cookie.setMaxAge(24 * 60 * 60);
+ response.addCookie(cookie);//注意此处先设置时长后addCookie不然不生效
+
+//5.其他请求进入拦截器，解密出jwt信息
+ Algorithm algorithm = Algorithm.HMAC256(accessToken);
+ JWTVerifier verifier = JWT.require(algorithm).build(); //Reusable verifier instance
+ DecodedJWT jwt = verifier.verify(token);
+ String payload = JWT.decode(token).getPayload();
+ JwtUserModel jwtUserModel = JSONObject.parseObject(covertBase64toString(payload)).toJavaObject(JwtUserModel.class);
+```
+
+##### 3.jwt优缺点
+
+***基于session和基于jwt的方式的主要区别就是用户的状态保存的位置，session是保存在服务端的，而jwt是保存在客户端的。***
+
+```sh
+#优点
+1. 可扩展性好
+应用程序分布式部署的情况下，session需要做多机数据共享，通常可以存在数据库或者redis里面。而jwt不需要。
+
+2. 无状态
+jwt不在服务端存储任何状态。RESTful API的原则之一是无状态，发出请求时，总会返回带有参数的响应，不会产生附加影响。用户的认证状态引入这种附加影响，这破坏了这一原则。另外jwt的载荷中可以存储一些常用信息，用于交换信息，有效地使用 JWT，可以降低服务器查询数据库的次数。
+
+#何为无状态和有状态?
+
+
+#缺点
+ 1.一次性
+无状态是jwt的特点，但也导致了这个问题，jwt是一次性的。想修改里面的内容，就必须签发一个新的jwt。
+
+（1）无法废弃
+通过上面jwt的验证机制可以看出来，一旦签发一个jwt，在到期之前就会始终有效，无法中途废弃。例如你在payload中存储了一些信息，当信息需要更新时，则重新签发一个jwt，但是由于旧的jwt还没过期，拿着这个旧的jwt依旧可以登录，那登录后服务端从jwt中拿到的信息就是过时的。为了解决这个问题，我们就需要在服务端部署额外的逻辑，例如设置一个黑名单，一旦签发了新的jwt，那么旧的就加入黑名单（比如存到redis里面），避免被再次使用。（V3系统中，注销时会将token从库中删除）
+
+2.占带宽
+正常情况下要比 session_id 更大，需要消耗更多流量，挤占更多带宽，假如你的网站每月有 10 万次的浏览器，就意味着要多开销几十兆的流量。听起来并不多，但日积月累也是不小一笔开销。实际上，许多人会在 JWT 中存储的信息会更多。
+
+3.性能问题
+JWT 的卖点之一就是加密签名，由于这个特性，接收方得以验证 JWT 是否有效且被信任。但是大多数 Web 身份认证应用中，JWT 都会被存储到 Cookie 中，这就是说你有了两个层面的签名。听着似乎很牛逼，但是没有任何优势，为此，你需要花费两倍的 CPU 开销来验证签名。对于有着严格性能要求的 Web 应用，这并不理想，尤其对于单线程环境。
+
+#CSRF攻击和XSS攻击？
+```
+
+
 
 ### 35.网络协议
 

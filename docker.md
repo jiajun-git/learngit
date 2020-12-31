@@ -274,6 +274,10 @@ docker-compose -f ecard-compose.yaml up -d            -----启动服务
 docker-compose -f nacos-compose.yaml up -d            -----启动nacos
 docker-compose -f ecard-compose.yaml restart 容器名    -----重启某个服务
 docker-compose -f nacos-compose.yaml down
+
+docker-compose -f ecard-compose.yaml stop ecard-consumer-accessinterface
+docker-compose -f ecard-compose.yaml rm ecard-consumer-accessinterface
+docker-compose -f ecard-compose.yaml up -d ecard-consumer-accessinterface
 ```
 
 ```sh
