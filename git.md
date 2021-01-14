@@ -638,4 +638,10 @@ https://www.liaoxuefeng.com/wiki/896043488029600/899998870925664
 
   ![image-20201106171413751](assets/image-20201106171413751.png)
 
-+ 然后再commit push即可
++ 如果加后pom文件和类名仍然报红，依次add一下
+
+  ![image-20210106100602800](assets/image-20210106100602800.png)
+
++ 然后先commit 再push即可
+
+  

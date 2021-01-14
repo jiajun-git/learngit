@@ -2742,3 +2742,20 @@ ipv4的ip地址是非常有限的，如果每个人都想拥有一个全球ip，
 这其实很简单，就是百度用的CDN服务器，只对应一个网站域名呗，说白了，就是百度有钱！
 ```
 
+### 40.SpringBoot Http请求头大小设置
+
++ 报错如下：
+
+  ![image-20210114163143089](assets/image-20210114163143089.png)
+
+```sh
+#http.maxHeaderSize
+指定 HTTP 消息头的最大允许大小（以字节为单位）。 默认为 8KB。 可使用 --max-http-header-size 命令行选项进行配置。(1024字节(Byte)=1KB,1M=1024KB 一个字节=8位（bit))
+
+server:
+  tomcat:
+    max-http-header-size: 4048576  ---4M
+注：这个值不能设置太大，几十KB就够了，太大会导致内存溢出，因为每次请求都是很大
+```
+
+![image-20210114165019860](assets/image-20210114165019860.png)
