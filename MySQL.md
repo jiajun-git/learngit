@@ -538,5 +538,35 @@ on duplicate key update
 当primary或者unique重复时，则执行update语句
 ```
 
+#### 9.mysql和oracle 分组，展示多个字段
 
+```xml
+<!--mysql-->
+SQL分组查询GroupBy+Group_concat ---表示分组之后，根据分组结果，使用 group_contact() 来放置每一组的每字段的值的集合
+select deparmant, GROUP_CONCAT(`name`) from employee GROUP BY deparmant
+```
+
+![image-20210204172027964](assets/image-20210204172027964.png)
+
+```xml
+<!--oracle-->
+所有版本的oracle都可以使用select wm_concat(name) as name from user;
+但如果是oracle11g，使用select listagg(name, ',') within group( order by name) as name from user;
+效率更高，官方也更推荐这种写法。
+
+注意：wm_concat 运行后的返回结果根据oracle的版本不同而会字段类型不同，在oracle11g中返回clob型，在oracle10g中返回varchar型
+
+通用版本语句：select qlrid,to_char(wm_concat(qlr)) as qlr,to_char(wm_concat(qlrzjh)) as qlrzjh from qlr t group by qlrid;
+
+例：
+<select id="getAccessCustGroupWholeList" resultType="com.access.api.model.AccessCustGroupWholeDto">
+        select
+        to_char(wm_concat(d.GROUPCODE)) as groupid_arr,
+        p.CUSTOMERCARDCODE as cust_code
+        from DR_LIMIT_GROUP_CUST d
+        left join pc_customer_base p on d.CUSTOMERID = p.ID
+        where d.ver > #{ver} and d.ver <![CDATA[ <= ]]> #{maxVer}
+        group by p.CUSTOMERCARDCODE
+    </select>
+```
 

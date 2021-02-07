@@ -676,3 +676,17 @@ tcp6       0      0 :::22                   :::*                    LISTEN      
 [root@localhost /]# yum remove nginx
 ```
 
+### 35.linux进入redis命令行操作
+
+```sh
+1.先进入redis容器，找到redis安装目录
+2.find / -name redis
+3.cd /usr/local/bin(进入安装的bin目录)
+4.redis-cli
+5.auth root
+6.info(查看)
+7.keys * (通配所有key)
+8.del [keyname] (删除key)
+9.exit(退出)
+```
+

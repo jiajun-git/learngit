@@ -25,6 +25,10 @@ ctrl+h
 #10.设置maven
 #11.设置jdk
 File-->Project Structure-->SDKs-->+jdk
+#12.查找替换
+ctrl+R 替换
+#13. 可以引入变量。例如把括号内的SQL赋成一个变量
+Ctrl＋Alt＋V
   
 ```
 

@@ -2040,7 +2040,9 @@ $ docker run -p 8080:8080 -t forezp/springboot-with-docker
 打开浏览器访问 localhost:8080;浏览器显示：Hello Docker World。 说明docker 的springboot工程已部署。
 ```
 
+#### 2.springboot自动装配
 
+[自动装配原理](https://mp.weixin.qq.com/s/bSY_LdiDs1339lL9zEGl9Q)
 
 
 
@@ -2759,3 +2761,6 @@ server:
 ```
 
 ![image-20210114165019860](assets/image-20210114165019860.png)
+
+### 41.Dubbo+SpringBoot项目
+
