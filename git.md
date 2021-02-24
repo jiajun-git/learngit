@@ -1,3 +1,5 @@
+
+
 ## git
 
 ### 1.基础知识和安装
@@ -199,6 +201,11 @@ Branch 'master' set up to track remote branch 'master' from 'origin'.
 
 之后提交不用再加-u参数：
 git push origin master
+
+#修改远程仓库
+git remote set-url origin url
+#查看远程仓库
+git remote -v
 ```
 
 ```sh
