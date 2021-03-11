@@ -93,12 +93,21 @@ SELECT * FROM students WHERE NOT class_id = 2;  不符合该条件的查询
 SELECT id, name, gender, score FROM students ORDER BY score;       升序
 SELECT id, name, gender, score FROM students ORDER BY score DESC;  倒序
 
-#分页查询
+#分页查询（mysql分页关键字--limit  oracle分页关键字--rownum）
+#mysql
+limit m,n 其中m表示起始位置的下标，下标从0开始。n表示要显示的条数，比如要查询一个表的第2到5条数据。
+select * from emp limit 1,4;
 第一页，每页3行记录：
 SELECT id, name, gender, score FROM students ORDER BY score DESC LIMIT 3 OFFSET 0;
 第二页：
 SELECT id, name, gender, score FROM students ORDER BY score DESC LIMIT 3 OFFSET 3;
 在MySQL中，LIMIT 15 OFFSET 30还可以简写成LIMIT 30, 15。使用LIMIT <M> OFFSET <N>分页时，随着N越来越大，查询效率也会越来越低。
+#oracle
+rownum关键字只能做< <=的判断，不能进行> >=的判断 (把rownum转成一个普通列，然后再利用运算关系计算即可比如查询gcfr_t_vch表的第3到4条数据。)
+select * from (select rownum r,t.* from gcfr_t_vch t) tt where tt.r >= 3 and tt.r <= 4;（优先）
+或 select * from (select rownum r,t.* from gcfr_t_vch t) tt where tt.r between 3 and 4;
+--分页规律总结：每页显示m条数据，查询第n页数据  
+ select * from (select rownum r,e. * from 要分页的表 e where rownum<=m*n) t where t.r>m*n-m ;
 
 #聚合查询
 SELECT COUNT(*) FROM students;
@@ -344,6 +353,15 @@ ORDER BY sid, s.serial#;
 
 **不以N开头的字段类型(比如CHAR,VARCHAR2)中，unicode字符(比如汉字)占3个字节，其他字符占1个字节。**
 
+```sh
+#varchar（10）与nvarchar（10）有什么区别
+前者是非unicode型，存储字符按1个算(内部空间存储占1字节)，存储汉字的话按2个算，
+就是可以存10个字符或者5个汉字
+后者是unicode型，存储什么都是按1个算(内部空间存储占2字节)，
+就是可以存10个字符或10个汉字
+varchar（10）与nvarchar（10）就是分别占10个字节和20个字节
+```
+
  
 
 + **如何求一个字符串占用的字符数和字节数？**
@@ -568,5 +586,295 @@ select deparmant, GROUP_CONCAT(`name`) from employee GROUP BY deparmant
         where d.ver > #{ver} and d.ver <![CDATA[ <= ]]> #{maxVer}
         group by p.CUSTOMERCARDCODE
     </select>
+
+<!--使用wm_concat效率明显低于listagg函数，建议使用listagg替代wm_concat，但使用listagg函数注意，拼接的字符不超过4000字节-->
+ SELECT
+  listagg( d.GROUPCODE,',') within group(order by d.GROUPCODE)  AS groupid_arr,
+  p.CUSTOMERCARDCODE AS cust_code
+FROM
+  DR_LIMIT_GROUP_CUST d
+  LEFT JOIN pc_customer_base p ON d.CUSTOMERID = p.ID 
+WHERE
+  d.ver > 0 
+  AND d.ver <= 4528372 
+GROUP BY
+  p.CUSTOMERCARDCODE                    
+```
+
+### 9.sql优化
+
+```sh
+1、查询语句中不要使用select *
+2、尽量减少子查询，使用关联查询（left join,right join,inner join）替代
+3、减少使用IN或者NOT IN ,使用exists，not exists或者关联查询语句替代
+4、or 的查询尽量用 union或者union all 代替(在确认没有重复数据或者不用剔除重复数据时，
+union all会更好) 5、应尽量避免在 where 子句中使用!=或<>操作符，否则将引擎放弃使用索引而进行全表扫描。
+6、应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表
+扫描，如： select id from t where num is null 可以在num上设置默认值0，确保表中num列没有
+null值，然后这样查询： select id from t where num=0
+```
+
+**1.like语句优化**
+
+```
+SELECT id FROM A WHERE name like '%abc%'
+```
+
+ 由于abc前面用了“%”，因此该查询必然走全表查询，除非必要，否则不要在关键词前加%，优化成如下
+
+```
+SELECT id FROM A WHERE name like 'abc%'
+```
+
+**2.where子句使用 ！= 或 <> 操作符优化**
+
+在where子句中使用 ！= 或 <>操作符，索引将被放弃使用，会进行全表查询。
+
+如SQL:SELECT id FROM A WHERE ID != 5 优化成：SELECT id FROM A WHERE ID>5 OR ID<5
+
+**3.where子句使用or的优化**
+
+　　很多时候使用union all 或 nuin(必要的时候)的方式替换“or”会得到更好的效果。where子句中使用了or,索引将被放弃使用。
+
+```xml
+如SQL:    SELECT id FROM A WHERE num =10 or num = 20 
+优化成：   SELECT id FROM A WHERE num = 10 union all SELECT id FROM A WHERE num=20
+```
+
+**4.where子句使用IN 或 NOT IN的优化**　　
+
+```sh
+in和not in 也要慎用，否则也会导致全表扫描。
+方案一：between替换in
+如SQL:SELECT id FROM A WHERE num in(1,2,3) 优化成：SELECT id FROM A WHERE num between 1 and 3
+方案二：exist替换in
+如SQL:SELECT id FROM A WHERE num in(select num from b ) 
+优化成：SELECT num FROM A WHERE num exists(select 1 from B where B.num = A.num)
+方案三：left join替换in
+如SQL:SELECT id FROM A WHERE num in(select num from B) 优化成：SELECT id FROM A LEFT JOIN B ON A.num = B.num
+
+https://www.cnblogs.com/clarke157/p/7912871.html
+1. in()适合B表比A表数据小的情况
+2. exists()适合B表比A表数据大的情况
+当A表数据与B表数据一样大时,in与exists效率差不多,可任选一个使用.
+select * from A
+where id in(select id from B)
+如:A表有10000条记录,B表有1000000条记录,那么最多有可能遍历10000*1000000次,效率很差.
+再如:A表有10000条记录,B表有100条记录,那么最多有可能遍历10000*100次,遍历次数大大减少,效率大大提升.
+select a.* from A a 
+where exists(select 1 from B b where a.id=b.id)
+如:A表有10000条记录,B表有1000000条记录,那么exists()会执行10000次去判断A表中的id是否与B表中的id相等.
+如:A表有10000条记录,B表有100000000条记录,那么exists()还是执行10000次,因为它只执行A.length次,可见B表数据越多,越适合exists()发挥效果.
+
+#exists用法
+exists : 强调的是是否返回结果集，不要求知道返回什么, 比如：select name from student where sex = 'm' and mark exists(select 1 from grade where ...) ,只要exists引导的子句有结果集返回，那么exists这个条件就算成立了,大家注意返回的字段始终为1，如果改成“select 2 from grade where ...”，那么返回的字段就是2，这个数字没有意义。所以exists子句不在乎返回什么，而是在乎是不是有结果集返回。
+```
+
+
+
+```sh
+#sql优化实例
+原sql:
+<select id="getAceCustAuth" resultType="com.ets.ecard.dto.access.AceCustAuthDto">
+        SELECT
+        T1.BEGIN_TIME beginTime,
+        T1.END_TIME endTime,
+        T1.TYPE type,
+        T2.WORK_NO workNo,
+        T2.NAME name,
+        T3.NAME custPlan,
+        T4.NAME devName,
+        T5.NAME deptName,
+        T6.NAME ssName
+        FROM
+        ACE_CUST_AUTH T1
+        LEFT JOIN CT_CUST_INFO T2 ON T1.CUST_CODE = T2.CUST_CODE
+        LEFT JOIN ACE_CUST_PLAN T3 ON T1.PLAN_ID = T3.ID
+        LEFT JOIN DV_DEV_INFO T4 ON T1.DEV_ID = T4.ID
+        LEFT JOIN DV_DEV_DEPT T5 ON T4.DEV_DEPT_ID = T5.ID
+        LEFT JOIN SS_MANAGER_INFO T6 ON T1.OP_ID = T6.ID
+        LEFT JOIN CT_CUST_DEPT T7 ON T2.DEPT_ID = T7.ID
+        WHERE
+        T1.TYPE = 1
+        <if test="legalPersonCode != null and legalPersonCode !=''">
+            AND T1.LEGAL_PERSON_CODE = #{legalPersonCode}
+        </if>
+        <if test="deptCode != null and deptCode !=''">
+            AND T5.DEPT_CODE LIKE #{deptCode}||'%'
+        </if>
+        <if test="deptmCode != null and deptmCode !=''">
+            AND T7.DEPT_CODE LIKE #{deptmCode}||'%'
+        </if>
+        <if test="name != null and name !=''">
+            AND (T2.NAME LIKE '%'||#{name}||'%' OR T2.WORK_NO LIKE '%'||#{name}||'%')
+        </if>
+        <if test="devName != null and devName !=''">
+            AND T4.NAME LIKE '%'||#{devName}||'%'
+        </if>
+        <if test="deptName != null and deptName !=''">
+            AND T5.NAME LIKE '%'||#{deptName}||'%'
+        </if>
+        ORDER BY T1.CREATE_TIME DESC
+    </select>
+    
+优化后sql:
+<select id="getAceCustAuth" resultType="com.ets.ecard.dto.access.AceCustAuthDto">
+        SELECT
+        T1.BEGIN_TIME beginTime,
+        T1.END_TIME endTime,
+        T1.TYPE type,
+        T2.WORK_NO workNo,
+        T2.NAME name,
+        T3.NAME custPlan,
+        T4.NAME devName,
+        T5.NAME deptName,
+        T6.NAME ssName
+        FROM
+        (SELECT * FROM ACE_CUST_AUTH WHERE ACE_CUST_AUTH.LEGAL_PERSON_CODE = #{legalPersonCode}) T1
+        LEFT JOIN CT_CUST_INFO T2 ON T1.CUST_CODE = T2.CUST_CODE
+        LEFT JOIN ACE_CUST_PLAN T3 ON T1.PLAN_ID = T3.ID
+        LEFT JOIN DV_DEV_INFO T4 ON T1.DEV_ID = T4.ID
+        LEFT JOIN DV_DEV_DEPT T5 ON T4.DEV_DEPT_ID = T5.ID
+        LEFT JOIN SS_MANAGER_INFO T6 ON T1.OP_ID = T6.ID
+        LEFT JOIN CT_CUST_DEPT T7 ON T2.DEPT_ID = T7.ID
+        WHERE
+        T1.TYPE = 1
+        <if test="deptCode != null and deptCode !=''">
+            AND T5.DEPT_CODE LIKE #{deptCode}||'%'
+        </if>
+        <if test="deptmCode != null and deptmCode !=''">
+            AND T7.DEPT_CODE LIKE #{deptmCode}||'%'
+        </if>
+        <if test="name != null and name !=''">
+            AND  T2.ID IN (SELECT ID FROM CT_CUST_INFO WHERE (CT_CUST_INFO.NAME LIKE  '%' || #{name} || '%' OR
+            CT_CUST_INFO.WORK_NO LIKE '%' || #{name} || '%'))
+        </if>
+        <if test="devName != null and devName !=''">
+            AND T4.ID IN (SELECT ID FROM DV_DEV_INFO WHERE DV_DEV_INFO.NAME LIKE '%' || #{devName} || '%')
+        </if>
+        <if test="deptName != null and deptName !=''">
+            AND T5.ID IN (SELECT ID FROM DV_DEV_DEPT WHERE DV_DEV_DEPT.NAME LIKE '%' || #{deptName} || '%')
+        </if>
+        ORDER BY T1.CREATE_TIME DESC
+    </select>
+----用子查询代替全表查主表
+```
+
+```sh
+#哪些场景会使索引失效
+1.条件中用or，即使其中有条件带索引，也不会使用索引查询
+2.like的模糊查询以%开头，索引失效
+3.如果列类型是字符串，那一定要在条件中将数据使用引号引用起来，否则不会使用索引
+```
+
+### 10.xml中CDATA标签的用法
+
+```sh
+术语 CDATA 指的是不应由 XML 解析器进行解析的文本数据（Unparsed Character Data）。
+在 XML 元素中，"<" 和 "&" 是非法的
+"<" 会产生错误，因为解析器会把该字符解释为新元素的开始。
+"&" 也会产生错误，因为解析器会把该字符解释为字符实体的开始。
+某些文本，比如 JavaScript 代码，包含大量 "<" 或 "&" 字符。为了避免错误，可以将脚本代码定义为 CDATA。
+CDATA 部分中的所有内容都会被解析器忽略。
+CDATA 部分由 "<![CDATA[" 开始，由 "]]>" 结束：
+
+例：WHERE Auth.Plan_Id<![CDATA[ <> ]]>#{planId}
+```
+
+### 11.oracle 视图与物化视图
+
+```sh
+#查看视图
+select * from user_views;  --查看普通视图
+
+select * from user_mviews;  --查看物化视图
+select count(*) from user_mviews where mview_name = 'GROUP_CUST'
+#删除视图
+drop view GROUP_CUST  --删除视图
+drop materialized view GROUP_CUST  --删除物化视图
+
+#创建物化视图
+https://www.jianshu.com/p/a06b3436f5ed
+
+DECLARE
+  v_sql   VARCHAR2(2000);
+  v_count number;
+BEGIN
+Select Count(*)
+  Into v_count
+  from user_mviews where mview_name = 'GROUP_CUST';
+If (v_count = 0)
+Then
+  v_sql := 'create materialized view group_cust as SELECT
+  listagg( d.GROUPCODE,'','') within group(order by d.GROUPCODE) AS groupid_arr,
+  p.CUSTOMERCARDCODE AS cust_code ,
+  max(d.ver) ver
+FROM
+  DR_LIMIT_GROUP_CUST d, pc_customer_base p where d.CUSTOMERID = p.ID(+)
+GROUP BY
+  p.CUSTOMERCARDCODE';
+  Execute Immediate v_sql;
+End If;
+end;
+/
+--此处左连接必须这么写，不然刷新不了物化视图
+
+#创建刷新物化视图的存储过程
+CREATE OR REPLACE PROCEDURE auto_refresh_mview_job_proc
+AS
+BEGIN
+dbms_mview.REFRESH('group_cust');
+END;
+/
+
+#创建定时刷新job
+DECLARE
+  v_sql   VARCHAR2(2000);
+  v_count number;
+BEGIN
+Select Count(*)
+  Into v_count
+  from dba_SCHEDULER_jobs where job_name = 'AUOT_REFRESH_MVIEW_JOB';
+If (v_count = 1)
+Then
+  v_sql := 'begin dbms_scheduler.drop_job(''auot_refresh_mview_job'');end;';
+  Execute Immediate v_sql;
+End If;
+end;
+/
+
+BEGIN
+DBMS_SCHEDULER.CREATE_JOB(
+job_name => 'auot_refresh_mview_job',
+job_type => 'STORED_PROCEDURE',
+job_action => 'auto_refresh_mview_job_proc',
+start_date => SYSDATE,
+repeat_interval => 'FREQ=DAILY;INTERVAL=1; BYHOUR=23;byminute=00',
+enabled => TRUE,
+comments => 'Refresh materialized view mv_emp'
+);
+END;
+/
+--每天23点刷新
+https://blog.csdn.net/li19236/article/details/41486177
+https://my.oschina.net/naisitumitiu/blog/4271719
+https://blog.csdn.net/demonson/article/details/81392306
+
+#删除job
+begin
+dbms_scheduler.drop_job('auot_refresh_mview_job');
+end;
+#停止job
+begin
+  dbms_scheduler.stop_job('auot_refresh_mview_job');
+end ;
+#查询job执行时间和上一次执行时间
+select last_start_date,next_run_date from dba_SCHEDULER_jobs where job_name = 'AUOT_REFRESH_MVIEW_JOB';
+Select * from dba_scheduler_jobs;
+
+#手动执行存储过程
+begin
+auto_refresh_mview_job_proc;
+end;
 ```
 

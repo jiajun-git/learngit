@@ -144,6 +144,16 @@ ear包：企业级应用，通常是EJB打成ear包。 ear是J2ee的应用文件
 
 ### 3.maven
 
+```sh
+#maven是什么
+Maven 是专门用于构建和管理Java相关项目的工具。
+使用Maven管理项目的好处主要有两点，其一是使用Maven管理的Java 项目都有着相同的项目结构。 有一个pom.xml 用于维护当前项目都用了哪些jar包；所有的java代码都放在 src/main/java 下面； 所有的测试代码都放在src/test/java 下面 。
+其二是便于统一维护jar包。
+maven风格的项目，把所有的jar包都放在了本地"仓库“ 里，然后哪个项目需要用到这个jar包，只需要给出jar包的名称和版本号就行了，这样就实现了jar包共享，避免每一个项目都有自己的jar包带来的麻烦。
+```
+
+
+
 ##### **maven的结构：**
 
 src -main             -java                 -package     -test             -java                 -package     -resources
@@ -1005,19 +1015,19 @@ class Person{
 
 ##### 1.类的加载
 
-![类加载过程](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-6/类加载过程.png)
+![类加载过程](assets/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.png)
 
 
 
 ##### 2.jvm内存结构
 
-![1575880110797](C:\Users\eaijusn\AppData\Roaming\Typora\typora-user-images\1575880110797.png)
+![img](assets/2019040912492050.png)
 
 - **堆（Heap）**：线程共享。堆的作用是存放对象实例和数组。从结构上来分，可以分为新生代和老年代。而新生代又可以分为Eden 空间、From Survivor 空间（s0）、To Survivor 空间（s1）。 所有新生成的对象首先都是放在新生代的。
 
 - **方法区（Method Area）**：(永久代)线程共享。它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。
 
-- **虚拟机栈（JVM Stack）**：线程私有。在方法栈中会存放编译期可知的各种基本数据类型（boolean、byte、char、short、int、float、long、double）、对象引用（reference
+- **虚拟机栈（JVM Stack）**：线程私有。又称方法栈，在方法栈中会存放编译期可知的各种基本数据类型（boolean、byte、char、short、int、float、long、double）、对象引用（reference
   类型，它不等同于对象本身。局部变量表所需的内存空间在编译期间完成分配，当进入一个方法时，这个方法需要在帧中分配多大的局部变量空间是完全确定的，在方法运行期间不会改变局部变量表的大小。
 
 - **本地方法栈（Native Method Stack）**：线程私有。为虚拟机使用到的Native 方法服务。如Java使用c或者c++编写的接口服务时，代码在此区运行。
@@ -1026,8 +1036,15 @@ class Person{
 
   Java虚拟机的多线程是通过线程轮流切换并分配处理器执行时间的方式来实现的，在任何一个确定的时刻，一个处理器（对于多核处理器来说是一个内核）只会执行一条线程中的指令。因此，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各条线程之间的计数器互不影响，独立存储，我们称这类内存区域为“线程私有”的内存。
 
-  ![img](https://user-gold-cdn.xitu.io/2019/10/18/16ddd3326cd672a1?imageView2/0/w/1280/h/960/ignore-error/1)
+  ![img](assets/16ddd3326cd672a1)
 
+```sh
+静态变量：位于方法区。
+实例变量：作为对象的一部分，保存在堆中。
+临时变量：保存于栈中，栈随线程的创建而被分配。
+栈内存中存放局部变量（基本数据类型和对象引用)，而堆内存用于存放对象（实体）
+对于字符串而言，如果是编译期已经创建好(直接用双引号定义的)的就存储在常量池中；如果是运行期（new出来的）才能确定的就存储在堆中。
+```
 
 ##### 3.jvm垃圾回收
 
@@ -1071,7 +1088,7 @@ java.lang.OutOfMemoryError: Java heap space
 
 B.**如何判断对象死亡**
 
-![img](https://user-gold-cdn.xitu.io/2018/8/29/165831b66fac7fce?imageView2/0/w/1280/h/960/ignore-error/1)
+![img](assets/165831b66fac7fce)
 
 ```sh
  #引用计数法
@@ -1082,7 +1099,7 @@ B.**如何判断对象死亡**
 这个算法的基本思想就是通过一系列的称为 “GC Roots” 的对象作为起点，从这些节点开始向下搜索，节点所走过的路径称为引用链，当一个对象到 GC Roots 没有任何引用链相连的话，则证明此对象是不可用的。
 ```
 
-![img](https://user-gold-cdn.xitu.io/2018/8/29/165831b6745d2462?imageView2/0/w/1280/h/960/ignore-error/1)
+![img](assets/165831b6745d2462)
 
 **引用**
 
@@ -1117,7 +1134,7 @@ B.**如何判断对象死亡**
 
 C.**垃圾收集算法**
 
-![img](https://user-gold-cdn.xitu.io/2018/8/29/165831b674db685f?imageView2/0/w/1280/h/960/ignore-error/1)
+![img](assets/165831b674db685f)
 
 **标记**-清除算法
 
@@ -1126,19 +1143,19 @@ C.**垃圾收集算法**
 1. 效率问题
 2. 空间问题（标记清除后会产生大量不连续的碎片）
 
-![img](https://user-gold-cdn.xitu.io/2018/8/29/165831b67608523b?imageView2/0/w/1280/h/960/ignore-error/1)
+![img](assets/165831b67608523b)
 
 **复制算法**
 
 为了解决效率问题，“复制”收集算法出现了。它可以将内存分为大小相同的两块，每次使用其中的一块。当这一块的内存使用完后，就将还存活的对象复制到另一块去，然后再把使用的空间一次清理掉。这样就使每次的内存回收都是对内存区间的一半进行回收。
 
-![img](https://user-gold-cdn.xitu.io/2018/8/29/165831b6799d8172?imageslim)
+![img](assets/165831b6799d8172)
 
 **标记**-整理算法
 
 根据老年代的特点特出的一种标记算法，标记过程仍然与“标记-清除”算法一样，但后续步骤不是直接对可回收对象回收，而是让所有存活的对象向一端移动，然后直接清理掉端边界以外的内存。
 
-![img](https://user-gold-cdn.xitu.io/2018/8/29/165831b69685fdbc?imageslim)
+![img](assets/165831b69685fdbc)
 
 **分代收集算法**
 
@@ -1146,7 +1163,7 @@ C.**垃圾收集算法**
 
 **比如在新生代中，每次收集都会有大量对象死去，所以可以选择复制算法，只需要付出少量对象的复制成本就可以完成每次垃圾收集。而老年代的对象存活几率是比较高的，而且没有额外的空间对它进行分配担保，所以我们必须选择“标记-清除”或“标记-整理”算法进行垃圾收集。**
 
-![img](https://user-gold-cdn.xitu.io/2018/8/29/165831b6960d1419?imageslim)
+![img](assets/165831b6960d1419)
 
 
 
@@ -1478,6 +1495,11 @@ Connector可以根据不同的设计和应用场景进行替换。一个Containe
 
 ### 18.Netty
 
+https://baijiahao.baidu.com/s?id=1673805056107382294&wfr=spider&for=pc
+https://www.jianshu.com/p/b9f3f6a16911
+
+![image-20210311170235107](assets/image-20210311170235107.png)
+
 ##### **异步与阻塞**
 
 ```sh
@@ -1516,15 +1538,7 @@ Netty是一个高性能、异步事件驱动的NIO框架，基于JAVA NIO提供�
     不再有在高速网络环境下NIO读写频率不一致的问题
 ```
 
-服务端
 
-
-
-![1575876986360](C:\Users\eaijusn\AppData\Roaming\Typora\typora-user-images\1575876986360.png)
-
-客户端
-
-![1575877145069](C:\Users\eaijusn\AppData\Roaming\Typora\typora-user-images\1575877145069.png)
 
 ##### **server 和client的示例代码**
 
@@ -2546,7 +2560,7 @@ server.servlet.session.cookie.max-age=43200  （单位：秒）
 
 
 
-### 34.jwt实现登录
+### 34.jwt(JSON WEB TOKEN)实现登录
 
 ##### 1.jwt原理
 
@@ -2656,7 +2670,7 @@ JWT 的卖点之一就是加密签名，由于这个特性，接收方得以验�
 #CSRF攻击和XSS攻击？
 ```
 
-
+##### 4.单点登录
 
 ### 35.网络协议
 

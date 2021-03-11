@@ -676,7 +676,7 @@ tcp6       0      0 :::22                   :::*                    LISTEN      
 [root@localhost /]# yum remove nginx
 ```
 
-### 35.linux进入redis命令行操作
+## 35.linux进入redis命令行操作
 
 ```sh
 1.先进入redis容器，找到redis安装目录
