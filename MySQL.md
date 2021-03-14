@@ -78,6 +78,27 @@ ON 表名(列名)
 　　1.索引需要占用数据表以外的物理存储空间
 　　2.创建索引和维护索引要花费一定的时间
 　　3.当对表进行更新操作时，索引需要被重建，这样降低了数据的维护速度。
+　　
+#哪些场景会使索引失效
+1.WHERE 子句中使用 != 或 <> 操作符。如
+SELECT id FROM tests WHERE name!='Tony';
+
+2.WHERE 子句中对索引列使用 %前缀模糊查询。
+SELECT id FROM tests WHERE name like'%Tony';
+//或者 
+SELECT id FROM tests WHERE name like'%Tony%';
+
+3.WHERE 子句中对索引列使用 OR 来连接条件。
+SELECT id FROM tests WHERE name ='Tony' or id=88;
+ 
+4.WHERE 子句中对索引列使用 NOT IN。 
+SELECT id FROM tests WHERE id not in(88,89);
+ 
+5.WHERE 子句中对索引列使用计算、函数、类型转换等操作。 
+SELECT id FROM tests WHERE substring(name,1,4)='Tony';
+ 
+6.WHERE 子句中对索引列使用参数。 
+SELECT id FROM tests WHERE name=@name;
 ```
 
 ### 4.查询数据

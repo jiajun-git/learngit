@@ -1015,7 +1015,7 @@ class Person{
 
 ##### 1.类的加载
 
-![类加载过程](assets/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.png)
+![类加载过程](file://D:/learngit/assets/class.png)
 
 
 
@@ -1286,6 +1286,12 @@ hashCode() 的作用是**获取哈希码**，也称为散列码；它实际上�
 
 ##### List、Set、Map
 
+![java集合框架图](assets/20181226170925698.jpg)
+
+![image-20210314154302450](assets/image-20210314154302450.png)
+
+![image-20210314154327629](assets/image-20210314154327629.png)
+
 ```sh
 #List(对付顺序的好帮手)： List接口存储一组不唯一（可以有多个元素引用相同的对象），有序的对象
       Arraylist： Object数组
@@ -1497,6 +1503,8 @@ Connector可以根据不同的设计和应用场景进行替换。一个Containe
 
 https://baijiahao.baidu.com/s?id=1673805056107382294&wfr=spider&for=pc
 https://www.jianshu.com/p/b9f3f6a16911
+
+BIo/NIo   https://blog.csdn.net/m0_38109046/article/details/89449305
 
 ![image-20210311170235107](assets/image-20210311170235107.png)
 
