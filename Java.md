@@ -942,6 +942,10 @@ public class Singleton {
 }
 ```
 
+##### 进程之间的通讯方式
+
+![image-20210319134540398](assets/image-20210319134540398.png)
+
 
 
 ### 11.static
@@ -2786,3 +2790,10 @@ server:
 
 ### 41.Dubbo+SpringBoot项目
 
+### 42.支付宝小程序支付 && 微信支付
+
+[支付宝小程序文档](https://opendocs.alipay.com/mini/)
+
+[支付宝小程序支付](https://opendocs.alipay.com/mini/introduce/pay)
+
+[微信小程序支付](https://pay.weixin.qq.com/wiki/doc/api/wxa/wxa_sl_api.php?chapter=9_1#)

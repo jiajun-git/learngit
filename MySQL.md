@@ -302,7 +302,7 @@ UPDATE accounts SET balance = balance + 100 WHERE id = 2;
 ROLLBACK;
 
 #隔离级别
-Isolation Level 脏读（Dirty Read）不可重复读（Non Repeatable Read） 幻读（Phantom Read）
+Isolation Level 脏读（Dirty Read）不可重复读（Non Repeatable Read） 幻读（Phantom Read）03
 Read Uncommitted   Yes                Yes                       Yes
 Read Committed      -                 Yes                       Yes
 Repeatable Read     -                  -                        Yes
@@ -621,6 +621,14 @@ WHERE
 GROUP BY
   p.CUSTOMERCARDCODE                    
 ```
+
+#### 10.plsql修改数据
+
+```sh
+select t.*, t.rowid from SS_FLOOR t where t.buildingid=8
+```
+
+
 
 ### 9.sql优化
 
