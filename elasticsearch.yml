@@ -1,0 +1,27 @@
+# 集群名称
+cluster.name: elasticsearch-cluster
+# 节点名称
+node.name: es-node1
+# 绑定host，0.0.0.0代表当前节点的ip
+network.host: 0.0.0.0
+# 设置其它节点和该节点交互的ip地址，如果不设置它会自动判断，值必须是个真实的ip地址(本机ip)
+network.publish_host: 172.21.229.184
+# 设置对外服务的http端口，默认为9200
+http.port: 9200
+# 允许其他应用访问
+http.host: 0.0.0.0
+# 设置节点间交互的tcp端口，默认是9300
+transport.tcp.port: 9300
+# 是否支持跨域，默认为false
+http.cors.enabled: true
+# 当设置允许跨域，默认为*,表示支持所有域名，如果我们只是允许某些网站能访问，那么可以使用正则表达式。比如只允许本地地址。 /https?:\/\/localhost(:[0-9]+)?/
+http.cors.allow-origin: "*"
+# 表示这个节点是否可以充当主节点
+node.master: true
+# 是否充当数据节点
+node.data: true
+# 所有主从节点ip:port
+discovery.seed_hosts: ["172.21.229.184:9300"]
+# 这个参数决定了在选主过程中需要 有多少个节点通信  预防脑裂(es6以前的配置，es7中不再有discovery.zen.minimum_master_nodes这个控制集群脑裂的配置，转而由集群自主控制，并且新版在启动一个新的集群的时候需要有cluster.initial_master_nodes初始化集群列表)
+discovery.zen.minimum_master_nodes: 1
+

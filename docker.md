@@ -1,5 +1,7 @@
 # docker
 
+### 1.docker基本知识
+
 jiajundocker      sjiaj1995@163.com   默认密码
 
 https://hub.docker.com/editions/community/docker-ce-desktop-windows下载edge版docker desktop
@@ -154,7 +156,7 @@ docker push registry.cn-hangzhou.aliyuncs.com/zzyybuy/mycentos:版本号
 
 
 
-#### docker --link
+### 2.docker --link
 
 运行一个容器,通过–name指定一个便于记忆的名字,这个容器被称为source container，也就是要连接的容器
 $ docker run --name mysql -e MYSQL_ROOT_PASSWORD=server -d mysql
@@ -177,7 +179,7 @@ $ docker run --name nginx --link mysql:aliasmysql -d nginx
 
 
 
-
+### 3.k8s
 
 就在Docker容器技术被炒得热火朝天之时，大家发现，如果想要将Docker应用于具体的业务实现，是存在困难的——编排、管理和调度等各个方面，都不容易。于是，人们迫切需要一套管理系统，对Docker及容器进行更高级更灵活的管理。 
 
@@ -265,6 +267,20 @@ Kubernetes = 容器资源管理 + 集群编排
 
 
 ![image-20200714140110209](assets/image-20200714140110209.png)
+
+### 4.docker-compose
+
+```sh
+#下载安装docker-compose
+https://github.com/docker/compose/releases/tag/1.25.0-rc4
+下载docker-compose-Linux-x86_64
+
+复制 docker-compose-Linux-x86_64 到 /usr/local/bin 目录下
+改名：
+mv docker-compose-Linux-x86_64 docker-compose
+
+chmod +x /usr/local/bin/docker-compose
+```
 
 
 

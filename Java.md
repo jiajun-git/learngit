@@ -946,6 +946,41 @@ public class Singleton {
 
 ![image-20210319134540398](assets/image-20210319134540398.png)
 
+##### 异步处理不生效改用新建线程
+
+![image-20210721151657691](D:\learngit\assets\image-20210721151657691.png)
+
+```java 
+//由于此处异步不生效，原因可能为异步方法需要写在另一类中 https://www.codeleading.com/article/74813688168/
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                immsNotice(userBatchParam);
+            }
+        });
+        thread.start();
+
+
+        long endTime5=System.currentTimeMillis(); //获取结束时间
+        System.out.println("最后方法运行时间： "+(endTime5-startTime5)+"ms");
+        System.out.println("最后方法运行id: "+Thread.currentThread().getId());
+        return Boolean.TRUE;
+    }
+
+    @Async
+    public void immsNotice(UserBatchParam userBatchParam) {
+        System.out.println("异步处理id："+Thread.currentThread().getId());
+```
+
++ 运行结果如下：
+
+  ![image-20210721152025077](D:\learngit\assets\image-20210721152025077.png)
+
+```sh
+由于新建了一个线程，主线程相当于已经跑完，所以达到异步的效果。
+```
+
 
 
 ### 11.static
