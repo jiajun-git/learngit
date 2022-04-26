@@ -277,6 +277,10 @@ ALTER TABLE tb_name  DROP COLUMN column_name;
 对class_id=1的记录进行快照，并存储为新表students_of_class1:
 CREATE TABLE students_of_class1 SELECT * FROM students WHERE class_id=1;
 
+#union和union all
+如果我们需要将两个select语句的结果作为一个整体显示出来，我们就需要用到union或者union all关键字。union(或称为联合)的作用是将多个结果合并在一起显示出来。
+union和union all的区别是,union会自动压缩多个结果集合中的重复结果，而union all则将所有的结果全部显示出来，不管是不是重复。
+Union因为要进行重复值扫描，所以效率低。如果合并没有刻意要删除重复行，那么就使用Union All。
 ```
 
 ### 6.事务
@@ -312,6 +316,10 @@ Read Uncommitted是隔离级别最低的一种事务级别。在这种隔离级�
 Read Committed隔离级别下，不可重复读是指，在一个事务内，多次读同一数据，在这个事务还没有结束时，如果另一个事务恰好修改了这个数据，那么，在第一个事务中，两次读取的数据就可能不一致。
 Repeatable Read隔离级别下，幻读（Phantom Read）是指，在一个事务中，第一次查询某条记录，发现没有，但是，当试图更新这条不存在的记录时，竟然能成功，并且，再次读取同一条记录，它就神奇地出现了。(事务A 按照一定条件进行数据读取， 期间事务B 插入了相同搜索条件的新数据，事务A再次按照原先条件进行读取时，发现了事务B 新插入的数据 称为幻读)
 Serializable是最严格的隔离级别。在Serializable隔离级别下，所有事务按照次序依次执行，因此，脏读、不可重复读、幻读都不会出现。虽然Serializable隔离级别下的事务具有最高的安全性，但是，由于事务是串行执行，所以效率会大大下降，应用程序的性能会急剧降低。如果没有特别重要的情景，一般都不会使用Serializable隔离级别。
+
+注意：不可重复读与幻读很容易搞混，他们的区别在于：
+不可重复读：是同一条记录（一条数据）的内容被其他事物修改了，关注的是update、delete操作一条数据的操作.
+幻读：是查询某个范围（多条数据）的数据行变多或变少了，在于insert、delete的操作。
 
 #默认级别
 如果没有指定隔离级别，数据库就会使用默认的隔离级别。在MySQL中，如果使用InnoDB，默认的隔离级别是Repeatable Read。
