@@ -642,7 +642,9 @@ select t.*, t.rowid from SS_FLOOR t where t.buildingid=8
 
 ```sh
 1、查询语句中不要使用select *
+https://blog.csdn.net/androidstarjack/article/details/116473893
 2、尽量减少子查询，使用关联查询（left join,right join,inner join）替代
+子查询就更别用了，效率太差，执行子查询时，MYSQL需要创建临时表，查询完毕后再删除这些临时表，所以，子查询的速度会受到一定的影响，这里多了一个创建和销毁临时表的过程
 3、减少使用IN或者NOT IN ,使用exists，not exists或者关联查询语句替代
 4、or 的查询尽量用 union或者union all 代替(在确认没有重复数据或者不用剔除重复数据时，
 union all会更好) 5、应尽量避免在 where 子句中使用!=或<>操作符，否则将引擎放弃使用索引而进行全表扫描。
