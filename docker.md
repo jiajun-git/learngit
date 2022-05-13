@@ -46,7 +46,7 @@ docker rmi 名字/或id      删除image  如果已经创了容器则： docker 
 
 容器命令：
 
-```)
+```bash
 docker run -it 名字/id  --name  新名字                     启动交互式容器，即进入容器中
 docker run -it -p 8080:8080 tomcat   -p主机端口（对外暴露的端口）：docker容器端口（内部实际的端口）  -P随机分配端口  docker run -it -P tomcat
 docker ps    查看有哪些正在进行的容器（-l 上一次运行的     -a   所有的    -n  数字    上几个容器）
@@ -65,6 +65,16 @@ docker cp 容器id:/tmp/yum.log /root               从容器内拷贝数据到�
 
 容器停止退出，命令：exit
 容器不停止退出，命令：ctrl+P+Q
+
+#docker stop 和 docker kill的区别
+docker stop: Stop a running container (send SIGTERM, and then SIGKILL after grace period) […] The main process inside the container will receive SIGTERM, and after a grace period, SIGKILL. [emphasis mine]
+
+docker kill: Kill a running container (send SIGKILL, or specified signal) […] The main process inside the container will be sent SIGKILL, or any signal specified with option --signal. [emphasis mine]
+
+docker stop，支持“优雅退出”。先发送SIGTERM信号，在一段时间之后（10s）再发送SIGKILL信号。Docker内部的应用程序可以接收SIGTERM信号，然后做一些“退出前工作”，比如保存状态、处理当前请求等。
+　docker kill，发送SIGKILL信号，应用程序直接退出。
+
+线上应用优雅退出十分必要。docker stop也不是docker独有的设计，lxc和google borg系统都有类似设计，即在发送SIGKILL之前，发送SIGTERM信号通知任务。
 ```
 
 
