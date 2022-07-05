@@ -790,11 +790,11 @@ Executors.newSingleThreadExecutor()返回一个线程池（这个线程池只有
 
 
 
-##### 静态代理
+##### 静态代理和动态代理
 
 ```sh
 使用一个代理对象将对象包装起来，然后用该代理对象来取代该对象，任何对原始对象的调用都要通过代理，代理对象决定是否以及何时调用原始对象的方法。
-静态模式要求被代理类和代理类同时实现相应的一套接口，通过代理类调用重写接口的方法，实际上调用的是原始对象的同样的方法。
+#静态模式要求被代理类和代理类同时实现相应的一套接口#，通过代理类调用重写接口的方法，实际上调用的是原始对象的同样的方法。
 实现Runnable接口创建线程就是静态代理。Apple类和Thread类都实现了Runnable接口。
 
 静态：由程序员创建代理类或特定工具自动生成源代码再对其编译。在程序运行前代理类的.class文件就已经存在了。
@@ -813,10 +813,68 @@ Executors.newSingleThreadExecutor()返回一个线程池（这个线程池只有
 
 即静态代理类只能为特定的接口(Service)服务。如想要为多个接口服务则需要建立很多个代理类。
 
+#举例说明
+定义个接口:Person
+
+public interface Person {
+    void findLove();
+}
+
+定义个被代理对象:Son
+public class Son implements Person {
+    @Override
+    public void findLove() {
+        System.out.println("儿子要求：肤白貌美大长腿");
+    }
+}
+
+定义个代理对象:，自己不实现方法，用被代理对象的方法操作。
+public class Father implements Person {
+    private Son person;
+
+    public Father(Son person) {
+        this.person = person;
+    }
+    @Override
+    public void findLove() {
+        System.out.println("父亲物色对象");
+        this.person.findLove();
+        System.out.println("双方父母同意，确立关系");
+    }
+}
+
+测试
+public class FatherProxyTest {
+    public static void main(String[] args) {
+        final Father father = new Father(new Son());
+        father.findLove();
+    }
+}
+输出为：
+父亲物色对象
+儿子要求：肤白貌美大长腿  -- 被代理对象的方法
+双方父母同意，确立关系
+
+ok，静态代理的demo完毕。
+提个需求:如果被代理对象son还有个方法marry()想被客户端调用，那代理对象father就得手动加个方法marry()与之对应。才能让客户端只调用father代理对象就可以。
+有100个方法呢，father得累死。这好像与设计模式的开闭原则有点不一致。
+
+再提个需求:要求不仅可以代理儿子的方法，可能还有女儿的方法，张三，李四的方法？，那我还得在father对象不断添加被代理对象的属性吗？
+
+能不能有个万能的媒婆，儿子如果有其他的方法，father能动态添加，而且其他不同的被代理对象(女儿，张三，李四)?
+可以的，这就是java动态代理
+
 引入动态代理：
 根据如上的介绍，你会发现每个代理类只能为一个接口服务，这样程序开发中必然会产生许多的代理类
 所以我们就会想办法可以通过一个代理类完成全部的代理功能，那么我们就需要用动态代理
 ```
+
+```sh
+#java提供了2种动态代理，一种是jdk动态代理，一种是cglib动态代理。
+https://blog.csdn.net/baidu_21349635/article/details/106172333
+```
+
+
 
 ##### 单例模式
 

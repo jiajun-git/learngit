@@ -712,7 +712,7 @@ exists : 强调的是是否返回结果集，不要求知道返回什么, 比如
 
 
 ```sh
-#sql优化实例
+#sql优化案例1
 原sql:
 <select id="getAceCustAuth" resultType="com.ets.ecard.dto.access.AceCustAuthDto">
         SELECT
@@ -805,6 +805,127 @@ exists : 强调的是是否返回结果集，不要求知道返回什么, 比如
 2.like的模糊查询以%开头，索引失效
 3.如果列类型是字符串，那一定要在条件中将数据使用引号引用起来，否则不会使用索引
 ```
+
+```xml
+-- sql优化案例2
+原sql
+        select t.id as userTenantId,
+        t.username as userName,
+        (select count(1) from oms_order o where o.receiver = t.id) as acceptAmount,
+        (select count(1) from oms_order o where o.receiver = t.id and o.solve_status =1) as acceptSolvedAmount,
+        (select count(1) from oms_order o where o.receiver = t.id and o.solve_status =0) as acceptUnsolvedAmount,
+        os.create_amount as createAmount,
+        os.solve_amount as solveAmount,
+        os.end_amount as endAmount,
+        os.restart_amount as restartAmount,
+        convert(os.evaluate_score/os.evaluated_amount,decimal(10,2)) as averageScore,
+        SEC_TO_TIME(floor(os.total_time/os.response_times)) as averageTime,
+        cm.first_login as firstLogin
+        from zxb_cloud.tms_user_tenant t
+        left join (select * from zxb_woms.oms_order_statistics where tenant_id=1322139332240257026 and to_days(create_time) =
+        to_days(now())) os on t.id = os.user_tenant_id
+        left join (select user_tenant_id,first_login from zxb_cloud.tms_consumer_monitor where tenant_id=1322139332240257026 and to_days(create_time) =
+        to_days(now())) cm on t.id = cm.user_tenant_id
+        where t.tenant_id = 1322139332240257026 order by acceptAmount desc
+
+优化后sql
+        select t.id as userTenantId,
+        t.username as userName,
+        oo1.acceptAmount as acceptAmount,
+        oo2.acceptSolvedAmount as acceptSolvedAmount,
+        oo3.acceptUnsolvedAmount as acceptUnsolvedAmount,
+        os.create_amount as createAmount,
+        os.solve_amount as solveAmount,
+        os.end_amount as endAmount,
+        os.restart_amount as restartAmount,
+        convert(os.evaluate_score/os.evaluated_amount,decimal(10,2)) as averageScore,
+        SEC_TO_TIME(floor(os.total_time/os.response_times)) as averageTime,
+        cm.first_login as firstLogin
+        from zxb_cloud.tms_user_tenant t
+        LEFT JOIN
+        (	select count(1) as acceptAmount,receiver  from zxb_woms.oms_order  where is_deleted = 0  GROUP BY receiver
+        ) oo1
+        on oo1.receiver = t.id
+        LEFT JOIN
+        (	select count(1) as acceptSolvedAmount,receiver  from zxb_woms.oms_order  where is_deleted = 0 and solve_status =1  GROUP BY receiver
+        ) oo2
+        on oo2.receiver = t.id
+        LEFT JOIN
+        (	select count(1) as acceptUnsolvedAmount,receiver  from zxb_woms.oms_order  where is_deleted = 0 and solve_status = 0  GROUP BY receiver
+        ) oo3
+        on oo3.receiver = t.id
+        left join (select * from zxb_woms.oms_order_statistics where tenant_id=1322139332240257026 and to_days(create_time) =
+        to_days(now())) os on t.id = os.user_tenant_id
+        left join (select user_tenant_id,first_login from zxb_cloud.tms_consumer_monitor where tenant_id=1322139332240257026 and
+        to_days(create_time) =
+        to_days(now())) cm on t.id = cm.user_tenant_id
+        where t.tenant_id =1322139332240257026 order by acceptAmount desc
+
+此优化点就是将acceptAmount,acceptSolvedAmount,acceptUnsolvedAmount这几个子查询关联的改为了关联查询，关联查询比子查询效率提升不少
+
+```
+
+![image-20220705105729685](C:\Users\sunjiajun\AppData\Roaming\Typora\typora-user-images\image-20220705105729685.png)
+
+![image-20220705105656172](C:\Users\sunjiajun\AppData\Roaming\Typora\typora-user-images\image-20220705105656172.png)
+
+
+
+```xml
+-- sql优化案例3
+原sql:
+SELECT *
+ FROM (SELECT a.id, a.user_tenant_id, a.name_type, b.username, p.mobile, a.nick_name, t.telephone, a.email, a.qq, a.wchat, a.create_time, a.update_time, a.name, a.company_id AS companyName, d.dept_id, CASE WHEN a.name_type = 1 THEN b.nickname WHEN a.name_type = 2 THEN b.username WHEN a.name_type = 3 THEN a.define ELSE '' END showName
+ FROM tms_customer a
+  LEFT JOIN tms_user_tenant b
+ ON a.user_tenant_id = b.id AND b.tenant_id = 1322139332240257026
+ LEFT JOIN tms_user_tenant_dept d
+ ON b.id = d.user_tenant_id
+ LEFT JOIN (SELECT customer_id, GROUP_CONCAT(phone) AS mobile
+ FROM tms_customer_phone
+ WHERE type = 1 GROUP BY customer_id) p
+ ON a.id = p.customer_id
+ LEFT JOIN (SELECT customer_id, GROUP_CONCAT(phone) AS telephone
+ FROM tms_customer_phone
+ WHERE type = 2 GROUP BY customer_id) t
+ ON a.id = t.customer_id
+ WHERE a.is_deleted = 0 AND a.tenant_id = 1322139332240257026) temp_data_scope
+ WHERE 1 = 1 ORDER BY id
+ LIMIT 20;
+
+由于主表tms_customer数据过多，关联查询时需要比较的次数也会增加，所以不会很快，故这种主表数据多的情况可以尽可能减少关联查，先查出满足的20条数据，再查询一次查询出其他需要的数据
+
+优化后sql:
+        select
+        a.id,a.user_tenant_id,a.name_type,
+        a.nick_name,a.email,a.qq,a.wchat,a.create_time,a.update_time ,a.name ,a.company_id as companyName
+        from tms_customer a
+        where a.is_deleted=0
+ -- and a.id in (select customer_id from tms_customer_phone where phone like CONCAT('%',#{customerQueryParam.mobile},'%') and type
+            = 1) --如果有查询条件为此
+--  and a.user_tenant_id in (
+                select b.id
+                from tms_user_tenant b
+                LEFT JOIN tms_user_tenant_dept d
+                ON b.id = d.user_tenant_id where 1=1
+                and d.dept_id in（...） -- 将权限的查询从关联查询改为条件的子查询
+
+查询出20条数据后再查其余数据
+--  查找其他数据
+SELECT GROUP_CONCAT(t.phone)as telephone,GROUP_CONCAT(p.phone) as mobile,aa.*
+ FROM ((SELECT a.id, a.name,b.username,CASE WHEN a.name_type = 1 THEN b.nickname WHEN a.name_type = 2 THEN b.username WHEN a.name_type = 3 THEN a.define ELSE '' END showName
+ FROM tms_customer a
+ LEFT JOIN tms_user_tenant b
+ ON a.user_tenant_id = b.id AND b.tenant_id = 1322139332240257026
+ WHERE a.is_deleted = 0 AND a.tenant_id = 1322139332240257026)) aa 
+ LEFT JOIN  tms_customer_phone t
+ ON aa.id = t.customer_id and t.type =2
+  LEFT JOIN  tms_customer_phone p
+ ON aa.id = p.customer_id and p.type =1
+ where aa.id in (1356411018822258690,1356411020332208130,1356419804274331649,1356419804626653185,1356419804966391809,1356419805696200705,1356419806014967810,1356419806455369729,1356419806803496962,1356419807134846977,1356419807474585601,1356419807826907138,1356419808124702721,1356419808745459713,1356419809118752769,1356419809697566721,1356419809986973697,1356419810267992065,1356419810574176257,1356419810876166145)GROUP BY aa.id 
+```
+
+
 
 ### 10.xml中CDATA标签的用法
 
