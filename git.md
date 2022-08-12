@@ -59,6 +59,8 @@ commit 095b6e227c1fa4ec2d3db62b60b750ef2fe7bb14 (HEAD -> master)
 Author: jiajun-git <sjiaj1995@163.com>
 Date:   Sun Sep 8 18:43:45 2019 +0800
 
+#退出git log 按q 退出
+
 #准备把readme.txt回退到上一个版本，也就是add distributed的那个版本
 #首先，Git必须知道当前版本是哪个版本，在Git中，用HEAD表示当前版本，也就是最新的提交1094adb...，上一个版本就是HEAD^，上上一个版本就是HEAD^^，当然往上100个版本写100个^比较容易数不过来，所以写成HEAD~100。
 $ git reset --hard HEAD^
@@ -95,6 +97,24 @@ Git在内部有个指向当前版本的HEAD指针，当你回退版本的时候�
         │
         ○ wrote a readme file
 然后顺便把工作区的文件更新了。所以你让HEAD指向哪个版本号，你就把当前版本定位在哪。
+
+
+#git checkout 命令
+git checkout branchname  切换分支
+
+git checkout -b branchname 创建并切换到新的分支.
+这个命令是将git branch newbranch和git checkout newbranch合在一起的结果
+
+只放弃工作区的改动，暂存区保持不变，其实就是从当前 暂存区 恢复 工作区：
+放弃工作区中全部的修改
+git checkout .
+
+放弃工作区中某个文件的修改：
+git checkout -- filename
+先使用 git status 列出文件，然后 git checkout -- app/Http/Controllers/Read/Read3Controller.php
+
+2、强制放弃 暂存区 和 工作区 的改动：
+git checkout -f
 ```
 
 
